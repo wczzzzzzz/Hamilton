@@ -37,3 +37,16 @@ function (op::Operator{:∫∫q̇mpqkpdx})(ap::T;k::AbstractMatrix{Float64},f::A
     end
 end
 # f[I] += -(ρ*A*Bₜ[i])*N[j] + ((N[i]*b) + N[j]*P)*𝑤
+#
+function (op::Operator{:∫dx})(ap::T;k::AbstractMatrix{Float64},f::AbstractMatrix{Float64}) where T<:AbstractElement
+    𝓒 = ap.𝓒; 𝓖 = ap.𝓖
+    for ξ in 𝓖
+        N = ξ[:𝝭]
+        𝑤 = ξ.𝑤
+        𝑃 = ξ.𝑃
+        for (i,xᵢ) in enumerate(𝓒)
+            I = xᵢ.𝐼
+            f[I] -= N[i]*𝑃*𝑤
+        end
+    end
+end
