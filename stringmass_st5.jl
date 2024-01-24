@@ -22,7 +22,9 @@ A = 100.0
 E = 3e6
 ρA = ρ*A
 EA = E*A
+𝑇(t) = t > 1.0 ? 0 : - sin(π*t)
 prescribe!(elements["Γᵍ"],:𝑃=>(x,y,z)->100.0)
+prescribe!(elements["Γ₄"],:𝑃=>(x,y,z)->𝑇(y))
 # prescribe!(elements["Ω"],:b=>(x,y,z)->0.0)
 
 fig = Figure()
@@ -34,27 +36,30 @@ lines!(𝑡, 𝑥, color = :black)
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
+kᵅ = zeros(nₚ,nₚ)
+fᵅ = zeros(nₚ)
+kᵝ = zeros(nₚ,nₚ)
+fᵝ = zeros(nₚ)
 
 ops = [
        
        Operator{:∫∫q̇mpqkpdx}(:ρA=>ρA,:EA=>EA),
        Operator{:∫𝑃δudx}(),
+       Operator{:∫vtdΓ}(),
+       Operator{:∫vgdΓ}(:α=>α),
 ]
 
 
 
 ops[1](elements["Ω"],k)
 ops[2](elements["Γᵍ"],f)
+ops[3](elements["Γ₄"],f)
+ops[4](elements["Γ₁"],kᵅ,fᵅ)
+ops[4](elements["Γ₂"],kᵅ,fᵅ)
+ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
-α = 1e9
-kα = zeros(nₚ,nₚ)
-fα = zeros(nₚ)
-kα[1,1] += α
-fα[1] += α*q₀
-kβ = zeros(nₚ,nₚ)
-kβ[nₚ,nₚ] += α
+d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
 
-d = [k+kα k;k kβ]\[f+fα;f]
 δd = d[nₚ+1:end]
 d = d[1:nₚ]
 
