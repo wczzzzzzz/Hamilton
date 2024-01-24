@@ -13,34 +13,38 @@ set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γᵍ"])
 set𝝭!(elements["Γᵗ"])
 
-# kᶜ = 100.0
-# m = 1.0
-# q̇₀ = 5.0
-# q₀ = 1.0
+kᶜ = 100.0
+m = 1.0
+q̇₀ = 5.0
+q₀ = 1.0
 ρ = 1.0
 A = 100.0
 E = 3e6
+ρA = ρ*A
 EA = E*A
-# prescribe!(elements["Γᵗ"],:P=>(x,y,z)->1.0)
+prescribe!(elements["Γᵍ"],:𝑃=>(x,y,z)->100.0)
 # prescribe!(elements["Ω"],:b=>(x,y,z)->0.0)
 
-# fig = Figure()
-# Axis(fig[1, 1])
-# 𝑡 = 0.0:0.01:1.0
-# 𝜔 = (kᶜ/m)^0.5
-# 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
-# lines!(𝑡, 𝑥, color = :black)
-
-
-ops = [
-       Operator{:∫∫q̇mpqkpdx}(:ρ=>ρ,:A=>A,:EA=>EA),
-]
+fig = Figure()
+Axis(fig[1, 1])
+𝑡 = 0.0:0.01:1.0
+𝜔 = (kᶜ/m)^0.5
+𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
+lines!(𝑡, 𝑥, color = :black)
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
 
-ops[1](elements["Ω"],k,f)
-# ops[2](elements["Γᵍ"],k,f)
+ops = [
+       
+       Operator{:∫∫q̇mpqkpdx}(:ρA=>ρA,:EA=>EA),
+       Operator{:∫𝑃δudx}(),
+]
+
+
+
+ops[1](elements["Ω"],k)
+ops[2](elements["Γᵍ"],f)
 
 α = 1e9
 kα = zeros(nₚ,nₚ)
@@ -55,7 +59,8 @@ d = [k+kα k;k kβ]\[f+fα;f]
 d = d[1:nₚ]
 
 
-lines!(nodes.x[[1,3:end...,2]], d, color = :blue)
+lines!(nodes.x, d, color = :blue)
+# lines!(t, d, color = :blue)
 
 
 fig
