@@ -1,4 +1,5 @@
 using  ApproxOperator, JuMP, Ipopt, CairoMakie
+using GLMakie
 
 model = Model(Ipopt.Optimizer)
 
@@ -19,7 +20,7 @@ set𝝭!(elements["Γ₄"])
 ρA = 1
 EA = 1
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
-prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->𝑇(y))
+prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
@@ -60,6 +61,52 @@ xs = [node.x for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
 ys = [node.d for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
 lines!(xs,ys, color = :blue)
 
+fig
 
+# α = (EA/ρA)^0.5
+# function 𝑢(x,t)
+#     if x < α*(t-1)
+#         return 2*α/π
+#     elseif α*t < x
+#         return 0
+#     else
+#         α/π*(1-cos(π*(t-x/α)))
+#     end
+# end
 
+# ind = 101
+# xs = 0.0:4.0/(ind-1):4.0
+# ys = 0.0:4.0/(ind-1):4.0
+# zs = zeros(ind,ind)
+# for (i,x) in enumerate(xs)
+#     for (j,y) in enumerate(ys)
+#         zs[i,j] = 𝑢(x,y)
+#     end
+# end
+
+# xs = 0.0:0.4:4.0
+# ys = 0.0:0.4:4.0
+# zs = hcat([d[1],d[40:-1:32]...,0.0],
+#           [d[5],d[41:49]...,0.0],
+#           [d[6],d[50:58]...,d[30]],
+#           [d[7],d[59:67]...,d[29]],
+#           [d[8],d[68:76]...,d[28]],
+#           [d[9],d[77:85]...,d[27]],
+#           [d[10],d[86:94]...,d[26]],
+#           [d[11],d[95:103]...,d[25]],
+#           [d[12],d[104:112]...,d[24]],
+#           [d[13],d[113:121]...,d[23]],
+#           [d[2],d[14:22]...,d[3]])
+xs = zeros(nₚ)
+ys = zeros(nₚ)
+zs = zeros(nₚ)
+for (i,node) in enumerate(nodes)
+    xs[i] = node.x
+    ys[i] = node.y
+    zs[i] = node.d
+end
+
+fig = Figure()
+ax = Axis3(fig[1,1])
+surface!(ax,xs,ys,zs)
 fig
