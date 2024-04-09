@@ -63,26 +63,26 @@ lines!(xs,ys, color = :blue)
 
 fig
 
-# α = (EA/ρA)^0.5
-# function 𝑢(x,t)
-#     if x < α*(t-1)
-#         return 2*α/π
-#     elseif α*t < x
-#         return 0
-#     else
-#         α/π*(1-cos(π*(t-x/α)))
-#     end
-# end
+α = (EA/ρA)^0.5
+function 𝑢(x,t)
+    if x < α*(t-1)
+        return 2*α/π
+    elseif α*t < x
+        return 0
+    else
+        α/π*(1-cos(π*(t-x/α)))
+    end
+end
 
-# ind = 101
-# xs = 0.0:4.0/(ind-1):4.0
-# ys = 0.0:4.0/(ind-1):4.0
-# zs = zeros(ind,ind)
-# for (i,x) in enumerate(xs)
-#     for (j,y) in enumerate(ys)
-#         zs[i,j] = 𝑢(x,y)
-#     end
-# end
+ind = 101
+xs = 0.0:4.0/(ind-1):4.0
+ys = 0.0:4.0/(ind-1):4.0
+zs = zeros(ind,ind)
+for (i,x) in enumerate(xs)
+    for (j,y) in enumerate(ys)
+        zs[i,j] = 𝑢(x,y)
+    end
+end
 
 # xs = 0.0:0.4:4.0
 # ys = 0.0:0.4:4.0
@@ -97,14 +97,14 @@ fig
 #           [d[12],d[104:112]...,d[24]],
 #           [d[13],d[113:121]...,d[23]],
 #           [d[2],d[14:22]...,d[3]])
-xs = zeros(nₚ)
-ys = zeros(nₚ)
-zs = zeros(nₚ)
-for (i,node) in enumerate(nodes)
-    xs[i] = node.x
-    ys[i] = node.y
-    zs[i] = node.d
-end
+# # xs = zeros(nₚ)
+# ys = zeros(nₚ)
+# zs = zeros(nₚ)
+# for (i,node) in enumerate(nodes)
+#     xs[i] = node.x
+#     ys[i] = node.y
+#     zs[i] = node.d
+# end
 
 fig = Figure()
 ax = Axis3(fig[1,1])
