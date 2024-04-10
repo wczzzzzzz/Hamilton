@@ -24,9 +24,12 @@ ops = [
 
 k = zeros(nₚ,nₚ)
 m = zeros(nₚ,nₚ)
+fᵗ = zeros(nₚ)
+fᵍ = zeros(nₚ)
 
 ops[1](elements["Ω"],m)
 ops[2](elements["Ω"],k)
+ops[4](elements["Γᵍ"],k,fᵍ)
 
 Δt = 5
 d = zeros(nₚ,nₜ+1)
@@ -34,10 +37,18 @@ d̈ₙ = zeros(nₚ)
 ḋₙ = zeros(nₚ)
 ḋₙ₊₁ = zeros(nₚ)
 
+𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
+
 for n in 1:nₚ
-    global d̈ₙ .+= k/m *d[:,n] 
+    fill!(fᵗ,0.0)
+    t = n*Δt
+    prescribe!(elements["Γᵗ"],:t=>(x,y,z)->𝑇(t))
+    ops[3](elements["Γᵗ"],fᵗ)
+
+    global d̈ₙ .+= m\(fᵗ+fᵍ - k *d[:,n])
     global ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ
     global d[:,n+1] .= d[:,n] + Δt*ḋₙ
+
 
     # for i in (1:nₚ)
     # global d₁₁ₙ .+= m/k *d[:, i] 
