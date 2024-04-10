@@ -3,10 +3,10 @@ using GLMakie
 
 model = Model(Ipopt.Optimizer)
 
-include("import_Scordelis_Lo_roof.jl")
+include("import_hmd_test.jl")
 
 ndiv= 11
-elements,nodes = import_roof_Tri3("./msh/bar_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
 set𝝭!(elements["Ω"])
@@ -25,7 +25,6 @@ prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
-
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)

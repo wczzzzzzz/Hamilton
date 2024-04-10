@@ -2,10 +2,10 @@ using  ApproxOperator, JuMP, Ipopt, CairoMakie
 
 model = Model(Ipopt.Optimizer)
 
-include("import_Scordelis_Lo_roof.jl")
+include("import_hmd_test.jl")
 
 ndiv= 10
-elements,nodes = import_roof_gauss("./msh/bar_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
 set𝝭!(elements["Ω"])

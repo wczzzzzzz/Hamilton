@@ -1,26 +1,21 @@
 
 using Revise, ApproxOperator, Printf, SparseArrays
 
-include("import_Scordelis_Lo_roof.jl")
+include("import_hmd_test.jl")
 
-ndiv= 11
-elements,nodes = import_roof_Tri3("./msh/bar_"*string(ndiv)*".msh")
+ndiv= 4
+elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
+nₜ = length(nodes)
 
 set𝝭!(elements["Ω"])
-set𝝭!(elements["Γ₁"])
-set𝝭!(elements["Γ₂"])
-set𝝭!(elements["Γ₃"])
-set𝝭!(elements["Γ₄"])
+set𝝭!(elements["Γᵍ"])
+set𝝭!(elements["Γᵗ"])
 
 ρA = 1
 EA = 1
-prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
-prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:g=>(x,y,z)->0.0)
-
+prescribe!(elements["Γᵍ"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γᵗ"],:g=>(x,y,z)->0.0)
 
 ops = [
     Operator{:∫qmpdΩ}(:ρA=>ρA),
@@ -34,13 +29,13 @@ ops[1](elements["Ω"],m)
 ops[2](elements["Ω"],k)
 
 Δt = 5
-d = zeros(nₚ,nₜ)
+d = zeros(nₚ,nₜ+1)
 d̈ₙ = zeros(nₚ)
 ḋₙ = zeros(nₚ)
 ḋₙ₊₁ = zeros(nₚ)
 
 for n in 1:nₚ
-    global d̈ₙ .+= m/k *d[:,n] 
+    global d̈ₙ .+= k/m *d[:,n] 
     global ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ
     global d[:,n+1] .= d[:,n] + Δt*ḋₙ
 
