@@ -1,12 +1,11 @@
 
-using Revise, ApproxOperator, Printf, SparseArrays
+using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra
 
 include("import_hmd_test.jl")
 
 ndiv= 4
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
-nₜ = length(nodes)
 
 set𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
@@ -32,26 +31,28 @@ fᵍ = zeros(nₚ)
 
 ops[1](elements["Ω"],m)
 ops[2](elements["Ω"],k)
-ops[4](elements["Γᵍ"],k,fᵍ)
+ops[4](elements["Γᵍ"],m,fᵍ)
 
-Δt = 1.5
+T = 4
+# Δt = 1.5
+Δt = 0.1
+nₜ = Int(T/Δt)
 d = zeros(nₚ,nₜ+1)
 d̈ₙ = zeros(nₚ)
 ḋₙ = zeros(nₚ)
-ḋₙ₊₁ = zeros(nₚ)
 
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 
 
-for n in 1:nₚ
+for n in 1:nₜ
     fill!(fᵗ,0.0)
     t = n*Δt
     prescribe!(elements["Γᵗ"],:t=>(x,y,z)->𝑇(t))
     ops[3](elements["Γᵗ"],fᵗ)
-    # print(𝑇(t))
-    global d̈ₙ .+= m\(fᵗ+fᵍ - k *d[:,n])
-    global ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ
+    # println(norm(fᵗ))
+    global d̈ₙ .= m\(fᵗ+fᵍ - k*d[:,n])
     global d[:,n+1] .= d[:,n] + Δt*ḋₙ
+    global ḋₙ .+= Δt*d̈ₙ
 
 
     # for i in (1:nₚ)
