@@ -9,17 +9,20 @@ nₚ = length(nodes)
 nₜ = length(nodes)
 
 set𝝭!(elements["Ω"])
+set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γᵍ"])
 set𝝭!(elements["Γᵗ"])
 
+α = 1e9
 ρA = 1
 EA = 1
 prescribe!(elements["Γᵍ"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γᵗ"],:g=>(x,y,z)->0.0)
 
 ops = [
     Operator{:∫qmpdΩ}(:ρA=>ρA),
     Operator{:∫qkpdΩ}(:EA=>EA),
+    Operator{:∫vtdΓ}(),
+    Operator{:∫vgdΓ}(:α=>α),
 ]
 
 k = zeros(nₚ,nₚ)
@@ -31,7 +34,7 @@ ops[1](elements["Ω"],m)
 ops[2](elements["Ω"],k)
 ops[4](elements["Γᵍ"],k,fᵍ)
 
-Δt = 5
+Δt = 1.5
 d = zeros(nₚ,nₜ+1)
 d̈ₙ = zeros(nₚ)
 ḋₙ = zeros(nₚ)
@@ -39,12 +42,13 @@ ḋₙ₊₁ = zeros(nₚ)
 
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 
+
 for n in 1:nₚ
     fill!(fᵗ,0.0)
     t = n*Δt
     prescribe!(elements["Γᵗ"],:t=>(x,y,z)->𝑇(t))
     ops[3](elements["Γᵗ"],fᵗ)
-
+    # print(𝑇(t))
     global d̈ₙ .+= m\(fᵗ+fᵍ - k *d[:,n])
     global ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ
     global d[:,n+1] .= d[:,n] + Δt*ḋₙ
