@@ -1,5 +1,5 @@
 
-using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra
+using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie
 
 include("import_hmd_test.jl")
 
@@ -16,6 +16,9 @@ set𝝭!(elements["Γᵗ"])
 ρA = 1
 EA = 1
 prescribe!(elements["Γᵍ"],:g=>(x,y,z)->0.0)
+
+fig = Figure()
+Axis(fig[1, 1])
 
 ops = [
     Operator{:∫qmpdΩ}(:ρA=>ρA),
@@ -34,7 +37,6 @@ ops[2](elements["Ω"],k)
 ops[4](elements["Γᵍ"],m,fᵍ)
 
 T = 4
-# Δt = 1.5
 Δt = 0.1
 nₜ = Int(T/Δt)
 d = zeros(nₚ,nₜ+1)
@@ -50,9 +52,9 @@ for n in 1:nₜ
     prescribe!(elements["Γᵗ"],:t=>(x,y,z)->𝑇(t))
     ops[3](elements["Γᵗ"],fᵗ)
     # println(norm(fᵗ))
-    global d̈ₙ .= m\(fᵗ+fᵍ - k*d[:,n])
-    global d[:,n+1] .= d[:,n] + Δt*ḋₙ
-    global ḋₙ .+= Δt*d̈ₙ
+     d̈ₙ .= m\(fᵗ+fᵍ - k*d[:,n])
+     d[:,n+1] .= d[:,n] + Δt*ḋₙ
+     ḋₙ .+= Δt*d̈ₙ
 
 
     # for i in (1:nₚ)
@@ -60,3 +62,7 @@ for n in 1:nₜ
     # global d₁ₙ₊₁ .+= d₁ₙ + Δt*d₁₁ₙ
     # global dₙ₊₁ .+= dₙ + Δt*d₁ₙ
 end
+
+lines!(nodes.x[[1,3:end...,2]], d[:,21], color = :blue)
+
+fig
