@@ -3,7 +3,7 @@ using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie
 
 include("import_hmd_test.jl")
 
-ndiv= 4
+ndiv= 20
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
@@ -40,29 +40,25 @@ T = 4
 Δt = 0.1
 nₜ = Int(T/Δt)
 d = zeros(nₚ,nₜ+1)
-d̈ₙ = zeros(nₚ)
+d̈ₙ₊₁ = zeros(nₚ)
 ḋₙ = zeros(nₚ)
+ḋₙ₊₁ = zeros(nₚ)
 
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 
 
 for n in 1:nₜ
     fill!(fᵗ,0.0)
-    t = n*Δt
+    t = (n+1)*Δt
     prescribe!(elements["Γᵗ"],:t=>(x,y,z)->𝑇(t))
     ops[3](elements["Γᵗ"],fᵗ)
-    # println(norm(fᵗ))
-     d̈ₙ .= m\(fᵗ+fᵍ - k*d[:,n])
-     d[:,n+1] .= d[:,n] + Δt*ḋₙ
-     ḋₙ .+= Δt*d̈ₙ
 
-
-    # for i in (1:nₚ)
-    # global d₁₁ₙ .+= m/k *d[:, i] 
-    # global d₁ₙ₊₁ .+= d₁ₙ + Δt*d₁₁ₙ
-    # global dₙ₊₁ .+= dₙ + Δt*d₁ₙ
+     d̈ₙ₊₁ .= m\(fᵗ+fᵍ - k*d[:,n+1])
+     ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ₊₁
+    #  d[:,n] .= k\(fᵗ+fᵍ - m*d̈ₙ₊₁) - Δt*ḋₙ₊₁
+     d[:,n+1] .= d[:,n] + Δt*ḋₙ₊₁
 end
 
-lines!(nodes.x[[1,3:end...,2]], d[:,21], color = :blue)
+lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2],21], color = :blue)
 
 fig

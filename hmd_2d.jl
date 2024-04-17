@@ -59,29 +59,36 @@ Axis(fig[1, 1])
 xs = [node.x for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
 ys = [node.d for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
 lines!(xs,ys, color = :blue)
+# lines!(nodes.x[[1,3:end...,2]], d[:,21], color = :blue)
+
 
 fig
 
-α = (EA/ρA)^0.5
-function 𝑢(x,t)
-    if x < α*(t-1)
-        return 2*α/π
-    elseif α*t < x
-        return 0
-    else
-        α/π*(1-cos(π*(t-x/α)))
-    end
-end
+# α = (EA/ρA)^0.5
+# function 𝑢(x,t)
+#     if x < α*(t-1)
+#         return 2*α/π
+#     elseif α*t < x
+#         return 0
+#     else
+#         α/π*(1-cos(π*(t-x/α)))
+#     end
+# end
 
-ind = 101
-xs = 0.0:4.0/(ind-1):4.0
-ys = 0.0:4.0/(ind-1):4.0
-zs = zeros(ind,ind)
-for (i,x) in enumerate(xs)
-    for (j,y) in enumerate(ys)
-        zs[i,j] = 𝑢(x,y)
-    end
-end
+# ind = 101
+# xs = 0.0:4.0/(ind-1):4.0
+# ys = 0.0:4.0/(ind-1):4.0
+# zs = zeros(ind,ind)
+# for (i,x) in enumerate(xs)
+#     for (j,y) in enumerate(ys)
+#         zs[i,j] = 𝑢(x,y)
+#     end
+# end
+
+# fig = Figure()
+# ax = Axis3(fig[1,1])
+# surface!(ax,xs,ys,zs)
+# fig
 
 # xs = 0.0:0.4:4.0
 # ys = 0.0:0.4:4.0
@@ -104,8 +111,3 @@ end
 #     ys[i] = node.y
 #     zs[i] = node.d
 # end
-
-fig = Figure()
-ax = Axis3(fig[1,1])
-surface!(ax,xs,ys,zs)
-fig
