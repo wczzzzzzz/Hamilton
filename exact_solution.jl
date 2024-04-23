@@ -50,9 +50,9 @@ ops[4](elements["Γ₁"],kᵅ,fᵅ)
 ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
-d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
+# d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
 
-d₁ = d[1:nₚ]
+# d₁ = d[1:nₚ]
 
 
 # XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
@@ -61,17 +61,17 @@ d₁ = d[1:nₚ]
 #         Sheet["B"*string(ind)] = d₁
 # end
 
-for i in 1:441
-    x = nodes.x[i]
-    y = nodes.y[i]
-        XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
-        Sheet = xf[2]
-        ind = findfirst(n->n==ndiv,11)+i
-            Sheet["C"*string(ind)] = x
-            Sheet["D"*string(ind)] = y
+# for i in 1:441
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#         XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
+#         Sheet = xf[2]
+#         ind = findfirst(n->n==ndiv,11)+i
+#             Sheet["C"*string(ind)] = x
+#             Sheet["D"*string(ind)] = y
         
-    end
-end
+#     end
+# end
 
 
 # # δd = d[nₚ+1:end]
@@ -87,31 +87,49 @@ end
 
 # fig
 
-# α = (EA/ρA)^0.5
-# function 𝑢(x,t)
-#     if x < α*(t-1)
-#         return 2*α/π
-#     elseif α*t < x
-#         return 0
-#     else
-#         α/π*(1-cos(π*(t-x/α)))
-#     end
+α = (EA/ρA)^0.5
+function 𝑢(x,t)
+    if x < α*(t-1)
+        return 2*α/π
+    elseif α*t < x
+        return 0
+    else
+        α/π*(1-cos(π*(t-x/α)))
+    end
+end
+
+ind = 101
+xs = 0.0:4.0/(ind-1):4.0
+ys = 0.0:4.0/(ind-1):4.0
+zs = zeros(ind,ind)
+for (i,x) in enumerate(xs)
+    for (j,y) in enumerate(ys)
+        zs[i,j] = 𝑢(x,y)
+    end
+end
+
+fig = Figure()
+ax = Axis3(fig[1,1])
+surface!(ax,xs,ys,zs)
+fig
+
+# XLSX.openxlsx("./excel/exact_solution.xlsx", mode="rw") do xf
+#     Sheet = xf[1]
+#     ind = findfirst(n->n==ndiv,11)+1
+#     Sheet["B"*string(ind)] = zs
 # end
 
-# ind = 101
-# xs = 0.0:4.0/(ind-1):4.0
-# ys = 0.0:4.0/(ind-1):4.0
-# zs = zeros(ind,ind)
-# for (i,x) in enumerate(xs)
-#     for (j,y) in enumerate(ys)
-#         zs[i,j] = 𝑢(x,y)
-#     end
+# for i in 1:101
+# x = nodes.x[i]
+# y = nodes.y[i]
+#      XLSX.openxlsx("./excel/exact_solution.xlsx", mode="rw") do xf
+#     Sheet = xf[2]
+#     ind = findfirst(n->n==ndiv,11)+i
+#         Sheet["C"*string(ind)] = x
+#         Sheet["D"*string(ind)] = y
+    
 # end
-
-# fig = Figure()
-# ax = Axis3(fig[1,1])
-# surface!(ax,xs,ys,zs)
-# fig
+# end
 
 # xs = 0.0:0.4:4.0
 # ys = 0.0:0.4:4.0

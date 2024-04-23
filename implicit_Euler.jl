@@ -55,9 +55,26 @@ for n in 1:nₜ
 
      d̈ₙ₊₁ .= m\(fᵗ+fᵍ - k*d[:,n+1])
      ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ₊₁
-    #  d[:,n] .= k\(fᵗ+fᵍ - m*d̈ₙ₊₁) - Δt*ḋₙ₊₁
      d[:,n+1] .= (m + k*Δt^2)\m*d[:,n] + (m + k*Δt^2)\(m*Δt)*ḋₙ + (m + k*Δt^2)/(Δt^2)*(fᵗ+fᵍ)
+
+    #  XLSX.openxlsx("./excel/implicit_Euler.xlsx", mode="rw") do xf
+    #     Sheet = xf[1]
+    #     ind = findfirst(n->n==ndiv,20)+1
+    #     Sheet["B"*string(ind)] = d
+    # end
 end
+
+# for i in 1:21
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#          XLSX.openxlsx("./excel/implicit_Euler.xlsx", mode="rw") do xf
+#         Sheet = xf[2]
+#         ind = findfirst(n->n==ndiv,20)+i
+#             Sheet["C"*string(ind)] = x
+#             Sheet["D"*string(ind)] = y
+        
+#     end
+# end
 
 lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2],21], color = :blue)
 

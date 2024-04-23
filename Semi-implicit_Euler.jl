@@ -57,13 +57,11 @@ for n in 1:nₜ
      ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ₊₁
      d[:,n+1] .= d[:,n] + Δt*ḋₙ₊₁
 
-    #  XLSX.openxlsx("./excel/Semi-implicit_Euler.xlsx", mode="rw") do xf
-    #     Sheet = xf[2]
-    #     ind = findfirst(n->n==ndiv,20)+1
-    #     Sheet["B"*string(ind)] = d
-    #     #     Sheet["C"*string(ind)] = nodes.x[]
-    #     #     Sheet["D"*string(ind)] = log10(L₂)
-    # end
+     XLSX.openxlsx("./excel/Semi-implicit_Euler.xlsx", mode="rw") do xf
+        Sheet = xf[1]
+        ind = findfirst(n->n==ndiv,20)+1
+        Sheet["B"*string(ind)] = d
+    end
     
 end
 for i in 1:21
@@ -72,7 +70,6 @@ for i in 1:21
          XLSX.openxlsx("./excel/Semi-implicit_Euler.xlsx", mode="rw") do xf
         Sheet = xf[2]
         ind = findfirst(n->n==ndiv,20)+i
-        # Sheet["B"*string(ind)] = d
             Sheet["C"*string(ind)] = x
             Sheet["D"*string(ind)] = y
         
