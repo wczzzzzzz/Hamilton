@@ -1,5 +1,5 @@
 
-using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie
+using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie, XLSX
 
 include("import_hmd_test.jl")
 
@@ -56,7 +56,30 @@ for n in 1:nₜ
      d̈ₙ₊₁ .= m\(fᵗ+fᵍ - k*d[:,n])
      ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ₊₁
      d[:,n+1] .= d[:,n] + Δt*ḋₙ₊₁
+
+    #  XLSX.openxlsx("./excel/Semi-implicit_Euler.xlsx", mode="rw") do xf
+    #     Sheet = xf[2]
+    #     ind = findfirst(n->n==ndiv,20)+1
+    #     Sheet["B"*string(ind)] = d
+    #     #     Sheet["C"*string(ind)] = nodes.x[]
+    #     #     Sheet["D"*string(ind)] = log10(L₂)
+    # end
+    
 end
+for i in 1:21
+    x = nodes.x[i]
+    y = nodes.y[i]
+         XLSX.openxlsx("./excel/Semi-implicit_Euler.xlsx", mode="rw") do xf
+        Sheet = xf[2]
+        ind = findfirst(n->n==ndiv,20)+i
+        # Sheet["B"*string(ind)] = d
+            Sheet["C"*string(ind)] = x
+            Sheet["D"*string(ind)] = y
+        
+    end
+end
+
+
 
 lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2],21], color = :blue)
 

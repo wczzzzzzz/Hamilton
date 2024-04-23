@@ -1,4 +1,5 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie
+using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX
+
 using GLMakie
 
 model = Model(Ipopt.Optimizer)
@@ -50,7 +51,30 @@ ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
 d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-# δd = d[nₚ+1:end]
+
+d₁ = d[1:2:2*nₚ]
+d₂ = d[2:2:2*nₚ]
+
+XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
+        Sheet = xf[1]
+        ind = findfirst(n->n==ndiv,11)+1
+        Sheet["B"*string(ind)] = d₁
+end
+
+# for i in 1:121
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#         XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
+#         Sheet = xf[2]
+#         ind = findfirst(n->n==ndiv,11)+i
+#             Sheet["C"*string(ind)] = x
+#             Sheet["D"*string(ind)] = y
+        
+#     end
+# end
+
+
+# # δd = d[nₚ+1:end]
 # d = d[1:nₚ]
 
 push!(nodes,:d=>d)
@@ -59,7 +83,6 @@ Axis(fig[1, 1])
 xs = [node.x for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
 ys = [node.d for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
 lines!(xs,ys, color = :blue)
-# lines!(nodes.x[[1,3:end...,2]], d[:,21], color = :blue)
 
 
 fig
@@ -103,7 +126,7 @@ fig
 #           [d[12],d[104:112]...,d[24]],
 #           [d[13],d[113:121]...,d[23]],
 #           [d[2],d[14:22]...,d[3]])
-# # xs = zeros(nₚ)
+# xs = zeros(nₚ)
 # ys = zeros(nₚ)
 # zs = zeros(nₚ)
 # for (i,node) in enumerate(nodes)
@@ -111,3 +134,5 @@ fig
 #     ys[i] = node.y
 #     zs[i] = node.d
 # end
+
+# fig
