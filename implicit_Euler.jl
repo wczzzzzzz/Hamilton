@@ -1,5 +1,5 @@
 
-using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie
+using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie, XLSX
 
 include("import_hmd_test.jl")
 
@@ -54,25 +54,25 @@ for n in 1:nₜ
     ops[3](elements["Γᵗ"],fᵗ)
 
      d̈ₙ₊₁ .= m\(fᵗ+fᵍ - k*d[:,n+1])
-     ḋₙ₊₁ .+= ḋₙ + Δt*d̈ₙ₊₁
+     ḋₙ₊₁ .= ḋₙ + Δt*d̈ₙ₊₁
      d[:,n+1] .= (m + k*Δt^2)\m*d[:,n] + (m + k*Δt^2)\(m*Δt)*ḋₙ + (m + k*Δt^2)/(Δt^2)*(fᵗ+fᵍ)
-
-    #  XLSX.openxlsx("./excel/implicit_Euler.xlsx", mode="rw") do xf
-    #     Sheet = xf[1]
-    #     ind = findfirst(n->n==ndiv,20)+1
-    #     Sheet["B"*string(ind)] = d
-    # end
 end
 
-# for i in 1:21
-#     x = nodes.x[i]
-#     y = nodes.y[i]
-#          XLSX.openxlsx("./excel/implicit_Euler.xlsx", mode="rw") do xf
-#         Sheet = xf[2]
-#         ind = findfirst(n->n==ndiv,20)+i
-#             Sheet["C"*string(ind)] = x
-#             Sheet["D"*string(ind)] = y
-        
+# ys = 0.0:4.0/(41-1):4.0
+
+# for (i, node) in enumerate(nodes)
+#     for (j, t) in enumerate(ys)
+#         x = node.x
+#         z = d[i,j]
+#         Δ = d[i,j] - 𝑢(x,t)
+#         XLSX.openxlsx("./excel/implicit_Euler.xlsx", mode="rw") do xf
+#             Sheet = xf[1]
+#             ind = findfirst(n->n==ndiv,20)+(i-1)*41+j
+#             Sheet["A"*string(ind)] = x
+#             Sheet["B"*string(ind)] = t
+#             Sheet["C"*string(ind)] = z
+#             Sheet["D"*string(ind)] = Δ
+#         end
 #     end
 # end
 

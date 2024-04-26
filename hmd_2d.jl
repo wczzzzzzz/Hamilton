@@ -51,31 +51,36 @@ ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
 d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-
 d₁ = d[1:nₚ]
 
 
-# XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
-#         Sheet = xf[1]
-#         ind = findfirst(n->n==ndiv,11)+1
-#         Sheet["B"*string(ind)] = d₁
-# end
-
-for i in 1:441
-    x = nodes.x[i]
-    y = nodes.y[i]
-        XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
-        Sheet = xf[2]
-        ind = findfirst(n->n==ndiv,11)+i
-            Sheet["C"*string(ind)] = x
-            Sheet["D"*string(ind)] = y
-        
+α = (EA/ρA)^0.5
+function 𝑢(x,t)
+    if x < α*(t-1)
+        return 2*α/π
+    elseif α*t < x
+        return 0
+    else
+        α/π*(1-cos(π*(t-x/α)))
     end
 end
 
 
-# # δd = d[nₚ+1:end]
-# d = d[1:nₚ]
+for i in 1:nₚ
+    x = nodes.x[i]
+    y = nodes.y[i]
+    d₁ = d[i]
+    Δ = d[i] - 𝑢(x,y)
+        XLSX.openxlsx("./excel/hmd_2d_n=10.xlsx", mode="rw") do xf
+        Sheet = xf[1]
+        ind = findfirst(n->n==ndiv,11)+i
+        Sheet["A"*string(ind)] = x
+        Sheet["B"*string(ind)] = y
+        Sheet["C"*string(ind)] = d₁
+        Sheet["D"*string(ind)] = Δ
+    end
+end
+
 
 # push!(nodes,:d=>d)
 # fig = Figure()
@@ -84,19 +89,22 @@ end
 # ys = [node.d for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
 # lines!(xs,ys, color = :blue)
 
-
 # fig
 
-# α = (EA/ρA)^0.5
-# function 𝑢(x,t)
-#     if x < α*(t-1)
-#         return 2*α/π
-#     elseif α*t < x
-#         return 0
-#     else
-#         α/π*(1-cos(π*(t-x/α)))
+# for i = 1:nₚ
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#     Δ = d[i] - 𝑢(x,y)
+#          XLSX.openxlsx("./excel/hmd_2d_error.xlsx", mode="rw") do xf
+#             Sheet = xf[1]
+#          ind = findfirst(n->n==ndiv,11)+1
+#          Sheet["B"*string(ind)] = Δ
+#             Sheet = xf[2]
+#          ind = findfirst(n->n==ndiv,11)+i
+#          Sheet["C"*string(ind)] = x
+#          Sheet["D"*string(ind)] = y
+#         end
 #     end
-# end
 
 # ind = 101
 # xs = 0.0:4.0/(ind-1):4.0
@@ -136,3 +144,6 @@ end
 # end
 
 # fig
+
+
+    
