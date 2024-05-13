@@ -26,16 +26,19 @@ function import_hmd_Tri3(filename::String)
     gmsh.initialize()
     gmsh.open(filename)
 
-    integrationorder = 5
+    integrationorder = 2
+    integrationorder_Ωᵍ = 10
     entities = getPhysicalGroups()
     nodes = get𝑿ᵢ()
     elements = Dict{String,Vector{ApproxOperator.AbstractElement}}()
     elements["Ω"] = getElements(nodes, entities["Ω"], Element{:Tri3}, integrationorder)
+    elements["Ωᵍ"] = getElements(nodes, entities["Ω"], Element{:Tri3}, integrationorder_Ωᵍ)
     elements["Γ₁"] = getElements(nodes, entities["Γ₁"], Element{:Seg2}, integrationorder)
     elements["Γ₂"] = getElements(nodes, entities["Γ₂"], Element{:Seg2}, integrationorder)
     elements["Γ₃"] = getElements(nodes, entities["Γ₃"], Element{:Seg2}, integrationorder)
     elements["Γ₄"] = getElements(nodes, entities["Γ₄"], Element{:Seg2}, integrationorder)
     push!(elements["Ω"], :𝝭=>:𝑠,:∂𝝭∂x=>:𝑠,:∂𝝭∂y=>:𝑠)
+    push!(elements["Ωᵍ"], :𝝭=>:𝑠,:∂𝝭∂x=>:𝑠,:∂𝝭∂y=>:𝑠)
     push!(elements["Γ₁"], :𝝭=>:𝑠)
     push!(elements["Γ₂"], :𝝭=>:𝑠)
     push!(elements["Γ₃"], :𝝭=>:𝑠)

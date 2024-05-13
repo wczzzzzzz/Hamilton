@@ -3,7 +3,7 @@ using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie, X
 
 include("import_hmd_test.jl")
 
-ndiv= 20
+ndiv= 80
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
@@ -25,6 +25,7 @@ ops = [
     Operator{:∫qkpdΩ}(:EA=>EA),
     Operator{:∫vtdΓ}(),
     Operator{:∫vgdΓ}(:α=>α),
+    Operator{:L₂}(),
 ]
 
 k = zeros(nₚ,nₚ)
@@ -51,7 +52,7 @@ function 𝑢(x,t)
     if x < α*(t-1)
         return 2*α/π
     elseif α*t < x
-        return 0
+        return 0.0
     else
         α/π*(1-cos(π*(t-x/α)))
     end
@@ -69,23 +70,31 @@ for n in 1:nₜ
      d[:,n+1] .= d[:,n] + Δt*ḋₙ₊₁
 end
 
-ys = 0.0:4.0/(41-1):4.0
+push!(nodes,:d=>d[:,21])
 
-for (i, node) in enumerate(nodes)
-    for (j, t) in enumerate(ys)
-        x = node.x
-        z = d[i,j]
-        Δ = d[i,j] - 𝑢(x,t)
-        XLSX.openxlsx("./excel/Semi-implicit_Euler.xlsx", mode="rw") do xf
-            Sheet = xf[2]
-            ind = findfirst(n->n==ndiv,20)+(i-1)*41+j
-            Sheet["A"*string(ind)] = x
-            Sheet["B"*string(ind)] = t
-            Sheet["C"*string(ind)] = z
-            Sheet["D"*string(ind)] = Δ
+prescribe!(elements["Ω"],:u=>(x,y,z)->𝑢(x,y))
+L₂ = ops[5](elements["Ω"])
+
+# ys = 0.0:4.0/(41-1):4.0
+# for (i, node) in enumerate(nodes)
+#     for (j, t) in enumerate(ys)
+#         x = node.x
+#         z = d[i,j]
+#         Δ = d[i,j] - 𝑢(x,t)
+            index = [10,20,40,80]
+            XLSX.openxlsx("./excel/Semi-implicit_Euler_n=10.xlsx", mode="rw") do xf
+            Sheet = xf[1]
+            # ind = findfirst(n->n==ndiv,20)+(i-1)*41+j
+            ind = findfirst(n->n==ndiv,index)+1
+            # Sheet["A"*string(ind)] = x
+            # Sheet["B"*string(ind)] = t
+            # Sheet["C"*string(ind)] = z
+            # Sheet["D"*string(ind)] = Δ
+            Sheet["E"*string(ind)] = log10(L₂)
+            Sheet["F"*string(ind)] = log10(4/ndiv)
         end
-    end
-end
+    # end
+# end
 
 
 
