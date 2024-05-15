@@ -2,12 +2,15 @@ using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX
 
 using GLMakie
 
+# ps = MKLPardisoSolver()
+# set_matrixtype!(ps,2)
+
 model = Model(Ipopt.Optimizer)
 
 include("import_hmd_test.jl")
 
 ndiv= 10
-elements,nodes = import_hmd_Tri3("./msh/Local_encryption_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
 set𝝭!(elements["Ω"])
@@ -17,7 +20,7 @@ set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 
-α = 1e9
+α = 1e13
 ρA = 1
 EA = 1
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
@@ -53,7 +56,7 @@ ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
 d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
 # d₁ = d[1:nₚ]
-d₂ = d[nₚ+1:2nₚ]
+d₁ = d[nₚ+1:2nₚ]
 push!(nodes,:d=>d₁)
 
 
@@ -79,8 +82,8 @@ for i in 1:nₚ
     d₁ = d[i]
     Δ = d[i] - 𝑢(x,y)
         index = [10,20,40,80]
-        XLSX.openxlsx("./excel/Local_encryption_10.xlsx", mode="rw") do xf
-        Sheet = xf[1]
+        XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
+        Sheet = xf[4]
         ind = findfirst(n->n==ndiv,index)+i
         Sheet["A"*string(ind)] = x
         Sheet["B"*string(ind)] = y
