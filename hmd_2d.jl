@@ -45,8 +45,6 @@ ops = [
     #    Operator{:L₂}(),
 ]
 
-
-
 ops[1](elements["Ω"],k)
 ops[2](elements["Γ₁"],f)
 ops[3](elements["Γ₄"],f)
@@ -55,44 +53,52 @@ ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
 d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-# d₁ = d[1:nₚ]
-d₁ = d[nₚ+1:2nₚ]
+d₁ = d[1:nₚ]
+# d₁ = d[nₚ+1:2nₚ]
 push!(nodes,:d=>d₁)
 
-
-α = (EA/ρA)^0.5
-function 𝑢(x,t)
-    if x < α*(t-1)
-        return 2*α/π
-    elseif α*t < x
-        return 0.0
-    else
-        α/π*(1-cos(π*(t-x/α)))
-    end
-end
+# α = (EA/ρA)^0.5
+# function 𝑢(x,t)
+#     if x < α*(t-1)
+#         return 2*α/π
+#     elseif α*t < x
+#         return 0.0
+#     else
+#         α/π*(1-cos(π*(t-x/α)))
+#     end
+# end
 
 # set𝝭!(elements["Ωᵍ"])
 # set∇𝝭!(elements["Ωᵍ"])
 # prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 # L₂ = ops[5](elements["Ωᵍ"])
 
-for i in 1:nₚ
-    x = nodes.x[i]
-    y = nodes.y[i]
-    d₁ = d[i]
-    Δ = d[i] - 𝑢(x,y)
-        index = [10,20,40,80]
-        XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
-        Sheet = xf[4]
-        ind = findfirst(n->n==ndiv,index)+i
-        Sheet["A"*string(ind)] = x
-        Sheet["B"*string(ind)] = y
-        Sheet["C"*string(ind)] = d₁
-        Sheet["D"*string(ind)] = Δ
-        # Sheet["E"*string(ind)] = log10(L₂)
-        # Sheet["F"*string(ind)] = log10(4/ndiv)
-    end
-end
+
+# for i in 1:nₚ
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#     d₁ = d[i]
+#     Δ = d[i] - 𝑢(x,y)
+#         index = [10,20,40,80]
+#         XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
+#         Sheet = xf[4]
+#         ind = findfirst(n->n==ndiv,index)+i
+#         Sheet["A"*string(ind)] = x
+#         Sheet["B"*string(ind)] = y
+#         Sheet["C"*string(ind)] = d₁
+#         Sheet["D"*string(ind)] = Δ
+#         # Sheet["E"*string(ind)] = log10(L₂)
+#         # Sheet["F"*string(ind)] = log10(4/ndiv)
+#     end
+# end
+
+
+
+
+
+
+
+
 
 # push!(nodes,:d=>d₁)
 # for (i,a) in enumerate(elements["Ω"])
