@@ -54,7 +54,7 @@ ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
 d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
 d₁ = d[1:nₚ]
-# d₁ = d[nₚ+1:2nₚ]
+
 push!(nodes,:d=>d₁)
 
 # α = (EA/ρA)^0.5

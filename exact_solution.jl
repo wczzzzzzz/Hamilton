@@ -6,8 +6,8 @@ model = Model(Ipopt.Optimizer)
 
 include("import_hmd_test.jl")
 
-ndiv= 11
-elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
+ndiv= 10
+elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
 set𝝭!(elements["Ω"])
@@ -51,41 +51,10 @@ ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
 # d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-
 # d₁ = d[1:nₚ]
-
-
-# XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
-#         Sheet = xf[1]
-#         ind = findfirst(n->n==ndiv,11)+1
-#         Sheet["B"*string(ind)] = d₁
-# end
-
-# for i in 1:441
-#     x = nodes.x[i]
-#     y = nodes.y[i]
-#         XLSX.openxlsx("./excel/hmd_2d.xlsx", mode="rw") do xf
-#         Sheet = xf[2]
-#         ind = findfirst(n->n==ndiv,11)+i
-#             Sheet["C"*string(ind)] = x
-#             Sheet["D"*string(ind)] = y
-        
-#     end
-# end
-
-
 # # δd = d[nₚ+1:end]
 # d = d[1:nₚ]
 
-# push!(nodes,:d=>d)
-# fig = Figure()
-# Axis(fig[1, 1])
-# xs = [node.x for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
-# ys = [node.d for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
-# lines!(xs,ys, color = :blue)
-
-
-# fig
 
 α = (EA/ρA)^0.5
 function 𝑢(x,t)
@@ -98,59 +67,28 @@ function 𝑢(x,t)
     end
 end
 
-# ind = 101
-# xs = 0.0:4.0/(ind-1):4.0
-# ys = 0.0:4.0/(ind-1):4.0
-# zs = zeros(ind,ind)
-# for (i,x) in enumerate(xs)
-#     for (j,y) in enumerate(ys)
-#         zs[i,j] = 𝑢(x,y)
-#     end
-# end
-
-# fig = Figure()
-# ax = Axis3(fig[1,1])
-# surface!(ax,xs,ys,zs)
-# fig
-
-# XLSX.openxlsx("./excel/exact_solution.xlsx", mode="rw") do xf
-#     Sheet = xf[1]
-#     ind = findfirst(n->n==ndiv,11)+1
-#     Sheet["B"*string(ind)] = zs
-# end
-
-for i in 1:101
-x = xs[i]
-y = ys[i]
-     XLSX.openxlsx("./excel/exact_solution.xlsx", mode="rw") do xf
-    Sheet = xf[2]
-    ind = findfirst(n->n==ndiv,11)+i
-        Sheet["C"*string(ind)] = x
-        Sheet["D"*string(ind)] = y
-    
-end
+ind = 101
+xs = 0.0:4.0/(ind-1):4.0
+ys = 0.0:4.0/(ind-1):4.0
+zs = zeros(ind,ind)
+for (i,x) in enumerate(xs)
+    for (j,y) in enumerate(ys)
+        zs[i,j] = 𝑢(x,y)
+         XLSX.openxlsx("./excel/exact_solution.xlsx", mode="rw") do xf
+         Sheet = xf[4]
+         ind = findfirst(n->n==ndiv,10)+(i-1)*101+j
+         Sheet["B"*string(ind)] = zs[i,j]
+        end
+    end
 end
 
-# xs = 0.0:0.4:4.0
-# ys = 0.0:0.4:4.0
-# zs = hcat([d[1],d[40:-1:32]...,0.0],
-#           [d[5],d[41:49]...,0.0],
-#           [d[6],d[50:58]...,d[30]],
-#           [d[7],d[59:67]...,d[29]],
-#           [d[8],d[68:76]...,d[28]],
-#           [d[9],d[77:85]...,d[27]],
-#           [d[10],d[86:94]...,d[26]],
-#           [d[11],d[95:103]...,d[25]],
-#           [d[12],d[104:112]...,d[24]],
-#           [d[13],d[113:121]...,d[23]],
-#           [d[2],d[14:22]...,d[3]])
-# xs = zeros(nₚ)
-# ys = zeros(nₚ)
-# zs = zeros(nₚ)
-# for (i,node) in enumerate(nodes)
-#     xs[i] = node.x
-#     ys[i] = node.y
-#     zs[i] = node.d
+# for i in 1:101
+# x = xs[i]
+# y = ys[i]
+#      XLSX.openxlsx("./excel/exact_solution.xlsx", mode="rw") do xf
+#     Sheet = xf[4]
+#     ind = findfirst(n->n==ndiv,11)+i
+#     Sheet["C"*string(ind)] = x
+#     Sheet["D"*string(ind)] = y
 # end
-
-# fig
+# end
