@@ -4,7 +4,7 @@ model = Model(Ipopt.Optimizer)
 
 include("import_hmd_test.jl")
 
-ndiv= 10
+ndiv= 40
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 

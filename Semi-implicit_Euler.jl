@@ -3,7 +3,7 @@ using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie, X
 
 include("import_hmd_test.jl")
 
-ndiv= 80
+ndiv= 10
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 

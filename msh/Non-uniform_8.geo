@@ -1,7 +1,7 @@
 
 a = 4.0;
 b = 4.0;
-n = 20;
+n = 8;
 
 Point(1) = {0.0, 0.0, 0.0};
 Point(2) = {  a, 0, 0.0};
@@ -24,6 +24,7 @@ Physical Curve("Γ₂") = {2};
 Physical Curve("Γ₃") = {3};
 Physical Curve("Γ₄") = {4};
 Physical Surface("Ω") = {1};
+Physical Curve("Γ₅") = {1};
 Physical Curve("Γ₇") = {3};
 Physical Curve("Γ₈") = {4};
 
