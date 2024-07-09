@@ -1,4 +1,4 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX
+using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX, LinearAlgebra
 
 using GLMakie
 
@@ -11,6 +11,8 @@ include("import_hmd_test.jl")
 
 ndiv= 10
 elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
 set𝝭!(elements["Ω"])
@@ -20,7 +22,7 @@ set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 
-α = 1e13
+α = 1e9
 ρA = 1
 EA = 1
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
@@ -42,6 +44,7 @@ ops = [
        Operator{:∫𝑃δudx}(),
        Operator{:∫vtdΓ}(),
        Operator{:∫vgdΓ}(:α=>α),
+       # Operator{:∫vgdΓ}(:α=>1.0),
     #    Operator{:L₂}(),
 ]
 
@@ -54,45 +57,53 @@ ops[4](elements["Γ₁"],kᵅ,fᵅ)
 ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
-d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-# d₁ = d[1:nₚ]
-d₁ = d[nₚ+1:2nₚ]
-push!(nodes,:d=>d₁)
+# g = k[[1:2...,5:22...,32:end...],:]
+# q = f[[1:2...,5:22...,32:end...]]
+# d = [k+kᵅ g';g zeros(154,154)]\[f+fᵅ;q]
+# d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
+d = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# δd = d[nₚ+1:2nₚ]
+d = d[1:nₚ]
+push!(nodes,:d=>d)
 
+# norm(kᵅ*d - fᵅ)
+# error = kᵅ*d - fᵅ
+# error = kᵝ*δd - fᵝ
+# error = g*d-q
 
-α = (EA/ρA)^0.5
-function 𝑢(x,t)
-    if x < α*(t-1)
-        return 2*α/π
-    elseif α*t < x
-        return 0.0
-    else
-        α/π*(1-cos(π*(t-x/α)))
-    end
-end
+# α = (EA/ρA)^0.5
+# function 𝑢(x,t)
+#     if x < α*(t-1)
+#         return 2*α/π
+#     elseif α*t < x
+#         return 0.0
+#     else
+#         α/π*(1-cos(π*(t-x/α)))
+#     end
+# end
 
 # set𝝭!(elements["Ωᵍ"])
 # set∇𝝭!(elements["Ωᵍ"])
 # prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 # L₂ = ops[5](elements["Ωᵍ"])
 
-for i in 1:nₚ
-    x = nodes.x[i]
-    y = nodes.y[i]
-    d₁ = d[i]
-    Δ = d[i] - 𝑢(x,y)
-        index = [10,20,40,80]
-        XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
-        Sheet = xf[4]
-        ind = findfirst(n->n==ndiv,index)+i
-        Sheet["A"*string(ind)] = x
-        Sheet["B"*string(ind)] = y
-        Sheet["C"*string(ind)] = d₁
-        Sheet["D"*string(ind)] = Δ
-        # Sheet["E"*string(ind)] = log10(L₂)
-        # Sheet["F"*string(ind)] = log10(4/ndiv)
-    end
-end
+# for i in 1:nₚ
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#     d₁ = d[i]
+#     Δ = d[i] - 𝑢(x,y)
+#         index = [10,20,40,80]
+#         XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
+#         Sheet = xf[4]
+#         ind = findfirst(n->n==ndiv,index)+i
+#         Sheet["A"*string(ind)] = x
+#         Sheet["B"*string(ind)] = y
+#         Sheet["C"*string(ind)] = d₁
+#         Sheet["D"*string(ind)] = Δ
+#         # Sheet["E"*string(ind)] = log10(L₂)
+#         # Sheet["F"*string(ind)] = log10(4/ndiv)
+#     end
+# end
 
 # push!(nodes,:d=>d₁)
 # for (i,a) in enumerate(elements["Ω"])
@@ -165,24 +176,23 @@ end
 #     end
 # end
 
-# fig = Figure()
-# ax = Axis3(fig[1,1])
-# surface!(ax,xs,ys,zs)
+fig = Figure()
+ax = Axis3(fig[1,1])
 # fig
 
-# xs = 0.0:0.4:4.0
-# ys = 0.0:0.4:4.0
-# zs = hcat([d[1],d[40:-1:32]...,0.0],
-#           [d[5],d[41:49]...,0.0],
-#           [d[6],d[50:58]...,d[30]],
-#           [d[7],d[59:67]...,d[29]],
-#           [d[8],d[68:76]...,d[28]],
-#           [d[9],d[77:85]...,d[27]],
-#           [d[10],d[86:94]...,d[26]],
-#           [d[11],d[95:103]...,d[25]],
-#           [d[12],d[104:112]...,d[24]],
-#           [d[13],d[113:121]...,d[23]],
-#           [d[2],d[14:22]...,d[3]])
+xs = 0.0:0.4:4.0
+ys = 0.0:0.4:4.0
+zs = hcat([d[1],d[40:-1:32]...,d[4]],
+          [d[5],d[41:49]...,d[31]],
+          [d[6],d[50:58]...,d[30]],
+          [d[7],d[59:67]...,d[29]],
+          [d[8],d[68:76]...,d[28]],
+          [d[9],d[77:85]...,d[27]],
+          [d[10],d[86:94]...,d[26]],
+          [d[11],d[95:103]...,d[25]],
+          [d[12],d[104:112]...,d[24]],
+          [d[13],d[113:121]...,d[23]],
+          [d[2],d[14:22]...,d[3]])
 # xs = zeros(nₚ)
 # ys = zeros(nₚ)
 # zs = zeros(nₚ)
@@ -192,7 +202,8 @@ end
 #     zs[i] = node.d
 # end
 
-# fig
+surface!(ax,xs,ys,zs')
+fig
 
 
     

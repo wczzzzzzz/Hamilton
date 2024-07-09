@@ -1,18 +1,18 @@
-using CairoMakie
+using CairoMakie, LinearAlgebra
 
-𝑘 = 100.0
+𝑘 = 1e3
 𝑚 = 1.0
 q̇₀ = 1.0
 q₀ = 0.0
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.001:1.0
+𝑡 = 0.0:0.0001:1.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = sin.(𝜔.*𝑡)./𝜔
 lines!(𝑡, 𝑥, color = :black)
 
-t = 0.0:0.01:1.0
+t = 0.0:0.1:1.0
 nₚ = length(t)
 nₑ = nₚ-1
 
@@ -51,7 +51,7 @@ f[2] = q₀+𝐿*q̇₀
 
 d = k\f
 
-lines!(t, d, color = :blue)
+# lines!(t, d, color = :blue)
 
 # F2 formulation: δq₀ = 0, δq₁ = 0
 k = zeros(nₚ,nₚ)
@@ -74,3 +74,5 @@ d = k\f
 lines!(t, d, color = :orange)
 
 fig
+
+# val = eigvals(k)
