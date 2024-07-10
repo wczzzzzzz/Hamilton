@@ -1,4 +1,4 @@
-using CairoMakie
+using CairoMakie, LinearAlgebra
 
 𝑘 = 100.0
 𝑚 = 1.0
@@ -13,7 +13,7 @@ Axis(fig[1, 1])
 u(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
 lines!(𝑡, 𝑥, color = :black)
 
-t = 0.0:0.1:1.0
+t = 0.0:0.001:1.0
 nₚ = length(t)
 nₑ = nₚ-1
 
@@ -53,6 +53,13 @@ end
 # kᵤᵤ[1,1] += α
 # fᵤ[1] += α*𝑚*q̇₀
 
+kᵤₚ[1,1] = 1.5
+kᵤₚ[nₚ,nₚ] = 0.5
+fₚ[1] = -1
+fₚ[nₚ] = cos(10) + 0.5*sin(10)
+# fₚ[nₚ] = cos(10/180*π) + 0.5*sin(10/180*π)
+
+
 k = [kᵤᵤ kᵤₚ;kᵤₚ' kₚₚ]
 f = [fᵤ;fₚ]
 
@@ -64,4 +71,4 @@ fig
 
 # val = eigvals(kᵤᵤ)
 # val = eigvals(kₚₚ)
-val = eigvals(k)
+val = eigvals(kᵤₚ)
