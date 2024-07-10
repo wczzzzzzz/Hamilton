@@ -10,6 +10,7 @@ Axis(fig[1, 1])
 𝑡 = 0.0:0.001:1.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
+u(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
 lines!(𝑡, 𝑥, color = :black)
 
 t = 0.0:0.1:1.0
@@ -56,11 +57,11 @@ k = [kᵤᵤ kᵤₚ;kᵤₚ' kₚₚ]
 f = [fᵤ;fₚ]
 
 d = k\f
-# d = d[1:nₚ]
 
 lines!(t, d[1:nₚ], color = :blue)
 
 fig
 
 # val = eigvals(kᵤᵤ)
-val = eigvals(kₚₚ)
+# val = eigvals(kₚₚ)
+val = eigvals(k)
