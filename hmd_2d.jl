@@ -27,11 +27,12 @@ set𝝭!(elements["Γ₄"])
 ρA = 1
 EA = 1
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
+U(x) = α/π*(sin(π*(4-x/α)))
 prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->)
+prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->U(x))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 
 k = zeros(nₚ,nₚ)
@@ -65,7 +66,7 @@ ops[4](elements["Γ₃"],kᵝ,fᵝ)
 # push!(nodes,:d=>d,:δd=>δd)
 
 d = (k+kᵅ)\(f+fᵅ)
-
+push!(nodes,:d=>d)
 
 α = (EA/ρA)^0.5
 function 𝑢(x,t)
@@ -184,7 +185,7 @@ for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
     ds[i] = node.d
-    δds[i] = node.δd
+    # δds[i] = node.δd
 end
 face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
