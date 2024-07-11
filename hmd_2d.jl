@@ -9,11 +9,12 @@ model = Model(Ipopt.Optimizer)
 
 include("import_hmd_test.jl")
 
-ndiv= 10
+ndiv= 20
 elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
+nₑ = length(elements["Ω"])
 
 set𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
@@ -55,10 +56,11 @@ ops[4](elements["Γ₁"],kᵅ,fᵅ)
 ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
-d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-d₁ = d[1:nₚ]
+dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+d = dt[1:nₚ]
+δd = dt[nₚ+1:end]
 
-push!(nodes,:d=>d₁)
+push!(nodes,:d=>d,:δd=>δd)
 
 
 α = (EA/ρA)^0.5
@@ -77,23 +79,23 @@ end
 # prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 # L₂ = ops[5](elements["Ωᵍ"])
 
-for i in 1:nₚ
-    x = nodes.x[i]
-    y = nodes.y[i]
-    d₁ = d[i]
-    Δ = d[i] - 𝑢(x,y)
-        index = [10,20,40,80]
-        XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
-        Sheet = xf[4]
-        ind = findfirst(n->n==ndiv,index)+i
-        Sheet["A"*string(ind)] = x
-        Sheet["B"*string(ind)] = y
-        Sheet["C"*string(ind)] = d₁
-        Sheet["D"*string(ind)] = Δ
-        # Sheet["E"*string(ind)] = log10(L₂)
-        # Sheet["F"*string(ind)] = log10(4/ndiv)
-    end
-end
+# for i in 1:nₚ
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#     d₁ = d[i]
+#     Δ = d[i] - 𝑢(x,y)
+#         index = [10,20,40,80]
+#         XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
+#         Sheet = xf[4]
+#         ind = findfirst(n->n==ndiv,index)+i
+#         Sheet["A"*string(ind)] = x
+#         Sheet["B"*string(ind)] = y
+#         Sheet["C"*string(ind)] = d₁
+#         Sheet["D"*string(ind)] = Δ
+#         # Sheet["E"*string(ind)] = log10(L₂)
+#         # Sheet["F"*string(ind)] = log10(4/ndiv)
+#     end
+# end
 
 # push!(nodes,:d=>d₁)
 # for (i,a) in enumerate(elements["Ω"])
@@ -170,29 +172,24 @@ fig = Figure()
 ax = Axis3(fig[1,1])
 # fig
 
-xs = 0.0:0.4:4.0
-ys = 0.0:0.4:4.0
-zs = hcat([d[1],d[40:-1:32]...,d[4]],
-          [d[5],d[41:49]...,d[31]],
-          [d[6],d[50:58]...,d[30]],
-          [d[7],d[59:67]...,d[29]],
-          [d[8],d[68:76]...,d[28]],
-          [d[9],d[77:85]...,d[27]],
-          [d[10],d[86:94]...,d[26]],
-          [d[11],d[95:103]...,d[25]],
-          [d[12],d[104:112]...,d[24]],
-          [d[13],d[113:121]...,d[23]],
-          [d[2],d[14:22]...,d[3]])
-# xs = zeros(nₚ)
-# ys = zeros(nₚ)
-# zs = zeros(nₚ)
-# for (i,node) in enumerate(nodes)
-#     xs[i] = node.x
-#     ys[i] = node.y
-#     zs[i] = node.d
-# end
+xs = zeros(nₚ)
+ys = zeros(nₚ)
+ds = zeros(nₚ)
+δds = zeros(nₚ)
+for (i,node) in enumerate(nodes)
+    xs[i] = node.x
+    ys[i] = node.y
+    ds[i] = node.d
+    δds[i] = node.δd
+end
+face = zeros(nₑ,3)
+for (i,elm) in enumerate(elements["Ω"])
+    face[i,:] .= [x.𝐼 for x in elm.𝓒]
+end
 
-surface!(ax,xs,ys,zs')
+# mesh!(ax,xs,ys,face,color=zs)
+# meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
+meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
 
