@@ -31,6 +31,7 @@ prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 
 k = zeros(nₚ,nₚ)
@@ -51,16 +52,19 @@ ops = [
 
 ops[1](elements["Ω"],k)
 ops[2](elements["Γ₁"],f)
+ops[2](elements["Γ₃"],f)
 ops[3](elements["Γ₄"],f)
 ops[4](elements["Γ₁"],kᵅ,fᵅ)
 ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-d = dt[1:nₚ]
-δd = dt[nₚ+1:end]
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# d = dt[1:nₚ]
+# δd = dt[nₚ+1:end]
 
-push!(nodes,:d=>d,:δd=>δd)
+# push!(nodes,:d=>d,:δd=>δd)
+
+d = (k+kᵅ)\(f+fᵅ)
 
 
 α = (EA/ρA)^0.5
