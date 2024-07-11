@@ -9,9 +9,9 @@ model = Model(Ipopt.Optimizer)
 
 include("import_hmd_test.jl")
 
-ndiv= 20
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
+ndiv= 10
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -32,7 +32,8 @@ prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->U(x))
+# prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->U(x))
+prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 
 k = zeros(nₚ,nₚ)
@@ -55,7 +56,7 @@ ops[1](elements["Ω"],k)
 ops[2](elements["Γ₁"],f)
 ops[2](elements["Γ₃"],f)
 ops[3](elements["Γ₄"],f)
-ops[4](elements["Γ₁"],kᵅ,fᵅ)
+# ops[4](elements["Γ₁"],kᵅ,fᵅ)
 ops[4](elements["Γ₂"],kᵅ,fᵅ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
@@ -66,6 +67,7 @@ ops[4](elements["Γ₃"],kᵝ,fᵝ)
 # push!(nodes,:d=>d,:δd=>δd)
 
 d = (k+kᵅ)\(f+fᵅ)
+# d = k\f
 push!(nodes,:d=>d)
 
 α = (EA/ρA)^0.5
@@ -193,8 +195,8 @@ for (i,elm) in enumerate(elements["Ω"])
 end
 
 # mesh!(ax,xs,ys,face,color=zs)
-# meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
-meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
+meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
+# meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
 
