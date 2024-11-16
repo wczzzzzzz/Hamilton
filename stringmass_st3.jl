@@ -1,6 +1,6 @@
 using CairoMakie
 
-𝑘 = 1e3
+𝑘 = 1e2
 𝑚 = 1.0
 q̇₀ = 5.0
 q₀ = 1.0
@@ -12,7 +12,7 @@ Axis(fig[1, 1])
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 lines!(𝑡, 𝑥, color = :black)
 
-dt = 0.1
+dt = 0.01
 t = collect(0.0:dt:1.0)
 nₚ = length(t)
 nₑ = nₚ-1
@@ -44,13 +44,16 @@ kᵅ[1,1] += α
 fᵅ[1] += α*q₀
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
+kᵝ[1,1] += α
 kᵝ[nₚ,nₚ] += α
 
-d = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-# d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-d = d[1:nₚ]
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+dt = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
+d = dt[1:nₚ]
+δd = dt[nₚ+1:end]
 
 lines!(t, d, color = :blue)
+# lines!(t,δd, color = :blue)
 
 # FEM weak test
 # k = zeros(nₚ,nₚ)

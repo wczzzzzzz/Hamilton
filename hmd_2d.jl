@@ -10,8 +10,8 @@ model = Model(Ipopt.Optimizer)
 include("import_hmd_test.jl")
 
 ndiv= 10
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -54,20 +54,23 @@ ops = [
 
 ops[1](elements["Ω"],k)
 ops[2](elements["Γ₁"],f)
-ops[2](elements["Γ₃"],f)
+# ops[2](elements["Γ₃"],f)
 ops[3](elements["Γ₄"],f)
 # ops[4](elements["Γ₁"],kᵅ,fᵅ)
 ops[4](elements["Γ₂"],kᵅ,fᵅ)
+ops[4](elements["Γ₁"],kᵝ,fᵝ)
+ops[4](elements["Γ₂"],kᵝ,fᵝ)
 ops[4](elements["Γ₃"],kᵝ,fᵝ)
 
 # dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# dt = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
 # d = dt[1:nₚ]
 # δd = dt[nₚ+1:end]
 
 # push!(nodes,:d=>d,:δd=>δd)
 
 d = (k+kᵅ)\(f+fᵅ)
-# d = k\f
+d = k\f
 push!(nodes,:d=>d)
 
 α = (EA/ρA)^0.5
@@ -188,7 +191,7 @@ for (i,node) in enumerate(nodes)
     ys[i] = node.y
     # zs[i] = 𝑢(xs,ys)
     ds[i] = node.d
-    # δds[i] = node.δd
+    δds[i] = node.δd
 end
 face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
