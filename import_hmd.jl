@@ -37,14 +37,14 @@ function import_hmd_Tri3(filename::String)
     elements["Γ₂"] = getElements(nodes, entities["Γ₂"], Element{:Seg2}, integrationorder)
     elements["Γ₃"] = getElements(nodes, entities["Γ₃"], Element{:Seg2}, integrationorder)
     elements["Γ₄"] = getElements(nodes, entities["Γ₄"], Element{:Seg2}, integrationorder)
-    push!(elements["Ω"], :𝝭=>:𝑠,:∂𝝭∂x=>:𝑠,:∂𝝭∂y=>:𝑠)
-    push!(elements["Ωᵍ"], :𝝭=>:𝑠,:∂𝝭∂x=>:𝑠,:∂𝝭∂y=>:𝑠)
-    push!(elements["Γ₁"], :𝝭=>:𝑠)
-    push!(elements["Γ₂"], :𝝭=>:𝑠)
-    push!(elements["Γ₃"], :𝝭=>:𝑠)
-    push!(elements["Γ₄"], :𝝭=>:𝑠)
+    push!(elements["Ω"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    push!(elements["Γ₁"], :𝝭)
+    push!(elements["Γ₂"], :𝝭)
+    push!(elements["Γ₃"], :𝝭)
+    push!(elements["Γ₄"], :𝝭)
 
-    # gmsh.finalize()
+    gmsh.finalize()
     return elements, nodes
 end
 
