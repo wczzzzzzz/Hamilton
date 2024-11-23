@@ -155,7 +155,7 @@ push!(nodes,:d=>d,:δd=>δd)
 
 # fig
 
-# ind = 101
+# ind = 121
 # xs = 0.0:4.0/(ind-1):4.0
 # ys = 0.0:4.0/(ind-1):4.0
 # zs = zeros(ind,ind)
@@ -176,6 +176,7 @@ ds = zeros(nₚ)
 for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
+    # zs[i] = 𝑢(xs,ys)
     ds[i] = node.d
     δds[i] = node.δd
 end
@@ -185,9 +186,11 @@ for (i,elm) in enumerate(elements["Ω"])
 end
 
 # mesh!(ax,xs,ys,face,color=zs)
+# meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
 meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
 # meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
+# save("./fig/非均布 Γ₁_g_80.png",fig)
 
     
