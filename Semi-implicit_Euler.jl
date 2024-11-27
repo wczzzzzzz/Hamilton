@@ -1,7 +1,7 @@
 
 using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie, XLSX
 
-include("import_hmd_test.jl")
+include("import_hmd.jl")
 
 ndiv= 10
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
@@ -62,7 +62,7 @@ end
 for n in 1:nₜ
     fill!(fᵗ,0.0)
     t = (n+1)*Δt
-𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
+    𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
     prescribe!(elements["Γᵗ"],:t=>(x,y,z)->-𝑇(t))
     ops[3](elements["Γᵗ"],fᵗ)
 
