@@ -12,17 +12,22 @@ set𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γᵍ"])
 
-kᶜ = 100
+kᶜ = 100.0
 m = 1.0
-q̇₀ = 5.0
+q̇₀ = 10.0
 q₀ = 1.0
+𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
+
+prescribe!(elements["Γᵍ"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γᵍ"],:𝑃=>(x,y,z)->0.0)
+
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.01:1.0
-𝜔 = (kᶜ/m)^0.5
-𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
-lines!(𝑡, 𝑥, color = :black)
+# 𝑡 = 0.0:0.01:1.0
+# 𝜔 = (kᶜ/m)^0.5
+# 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
+# lines!(𝑡, 𝑥, color = :black)
 
 
 ops = [
@@ -39,22 +44,8 @@ ops[1](elements["Ω"],k)
 𝑃₀ = m*q̇₀
 f[1] -= 𝑃₀
 
-α = 1e9
-kα = zeros(nₚ,nₚ)
-fα = zeros(nₚ)
-kα[1,1] += α
-fα[1] += α*q₀
-kβ = zeros(nₚ,nₚ)
-kβ[nₚ,nₚ] += α
-
-d = [k+kα k;k kβ]\[f+fα;f]
-δd = d[nₚ+1:end]
-d = d[1:nₚ]
-
+d = k\f
 
 lines!(nodes.x[[1,3:end...,2]], d, color = :blue)
 
-
 fig
-
-# save("./fig/一维/hmd_1d.png",fig)

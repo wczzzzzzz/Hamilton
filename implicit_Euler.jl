@@ -72,22 +72,22 @@ end
 
 ys = 0.0:4.0/(41-1):4.0
 
-for (i, node) in enumerate(nodes)
-    for (j, t) in enumerate(ys)
-        x = node.x
-        z = d[i,j]
-        Δ = d[i,j] - 𝑢(x,t)
-        XLSX.openxlsx("./excel/implicit_Euler.xlsx", mode="rw") do xf
-            Sheet = xf[1]
-            ind = findfirst(n->n==ndiv,20)+(i-1)*41+j
-            Sheet["A"*string(ind)] = x
-            Sheet["B"*string(ind)] = t
-            Sheet["C"*string(ind)] = z
-            Sheet["D"*string(ind)] = Δ
-        end
-    end
-end
+# for (i, node) in enumerate(nodes)
+#     for (j, t) in enumerate(ys)
+#         x = node.x
+#         z = d[i,j]
+#         Δ = d[i,j] - 𝑢(x,t)
+#         XLSX.openxlsx("./excel/implicit_Euler.xlsx", mode="rw") do xf
+#             Sheet = xf[1]
+#             ind = findfirst(n->n==ndiv,20)+(i-1)*41+j
+#             Sheet["A"*string(ind)] = x
+#             Sheet["B"*string(ind)] = t
+#             Sheet["C"*string(ind)] = z
+#             Sheet["D"*string(ind)] = Δ
+#         end
+#     end
+# end
 
-# lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2],21], color = :blue)
+lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2],21], color = :blue)
 
-# fig
+fig

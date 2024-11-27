@@ -91,3 +91,5 @@ lines!(t, d[1:nₚ], color = :blue)
 # lines!(t, d[nₚ+1:end-1], color = :blue)
 
 fig
+
+# save("./fig/一维解.png",fig)

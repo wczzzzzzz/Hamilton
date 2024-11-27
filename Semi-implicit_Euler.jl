@@ -62,6 +62,7 @@ end
 for n in 1:nₜ
     fill!(fᵗ,0.0)
     t = (n+1)*Δt
+𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
     prescribe!(elements["Γᵗ"],:t=>(x,y,z)->-𝑇(t))
     ops[3](elements["Γᵗ"],fᵗ)
 
@@ -80,25 +81,25 @@ L₂ = ops[5](elements["Ω"])
 #     for (j, t) in enumerate(ys)
 #         x = node.x
 #         z = d[i,j]
-#         Δ = d[i,j] - 𝑢(x,t)
-            index = [10,20,40,80]
-            XLSX.openxlsx("./excel/Semi-implicit_Euler_n=10.xlsx", mode="rw") do xf
-            Sheet = xf[1]
-            # ind = findfirst(n->n==ndiv,20)+(i-1)*41+j
-            ind = findfirst(n->n==ndiv,index)+1
-            # Sheet["A"*string(ind)] = x
-            # Sheet["B"*string(ind)] = t
-            # Sheet["C"*string(ind)] = z
-            # Sheet["D"*string(ind)] = Δ
-            Sheet["E"*string(ind)] = log10(L₂)
-            Sheet["F"*string(ind)] = log10(4/ndiv)
-        end
+# #         Δ = d[i,j] - 𝑢(x,t)
+#             index = [10,20,40,80]
+#             XLSX.openxlsx("./excel/Semi-implicit_Euler_n=10.xlsx", mode="rw") do xf
+#             Sheet = xf[1]
+#             # ind = findfirst(n->n==ndiv,20)+(i-1)*41+j
+#             ind = findfirst(n->n==ndiv,index)+1
+#             # Sheet["A"*string(ind)] = x
+#             # Sheet["B"*string(ind)] = t
+#             # Sheet["C"*string(ind)] = z
+#             # Sheet["D"*string(ind)] = Δ
+#             Sheet["E"*string(ind)] = log10(L₂)
+#             Sheet["F"*string(ind)] = log10(4/ndiv)
+#         end
     # end
 # end
 
 
 
 
-# lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2],21], color = :blue)
+lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2],21], color = :blue)
 
-# fig
+fig
