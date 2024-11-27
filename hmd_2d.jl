@@ -1,39 +1,60 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX, LinearAlgebra
+using  ApproxOperator
+
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
+import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
 
 using GLMakie
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
 
-model = Model(Ipopt.Optimizer)
+include("import_hmd.jl")
 
-include("import_hmd_test.jl")
-
-ndiv= 10
+ndiv= 40
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
 elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
-set𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
+set∇𝝭!(elements["Ωᵍ"])
 
-α = 1e9
-ρA = 1
-EA = 1
+ρA = 1e0
+EA = 1.0
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
-U(x) = α/π*(sin(π*(4-x/α)))
-prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
+function 𝑢(x,t)
+    if x < t - 1
+        return 2/π
+    elseif x > t
+        return 0.0
+    else
+        return (1-cos(π*(t - x)))/π
+    end
+end
+prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
+prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Ω"],:k=>(x,y,z)->1e12)
+prescribe!(elements["Γ₁"],:α=>(x,y,z)->1e12)
+prescribe!(elements["Γ₂"],:α=>(x,y,z)->1e12)
+prescribe!(elements["Γ₃"],:α=>(x,y,z)->1e12)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
+prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
+prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
+
+𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
+𝑓 = ∫vtdΓ=>elements["Γ₄"]
+𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+# 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
@@ -41,49 +62,21 @@ kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
+kᵞ = zeros(nₚ,nₚ)
 
-ops = [
-       Operator{:∫∫q̇mpqkpdx}(:ρA=>ρA,:EA=>EA),
-       Operator{:∫𝑃δudx}(),
-       Operator{:∫vtdΓ}(),
-       Operator{:∫vgdΓ}(:α=>α),
-       # Operator{:∫vgdΓ}(:α=>1.0),
-    #    Operator{:L₂}(),
-]
+𝑎(k)
+𝑓(f)
+𝑎ᵅ(kᵅ,fᵅ)
+𝑎ᵝ(kᵝ,fᵝ)
+𝑎ᵞ(kᵞ)
 
-ops[1](elements["Ω"],k)
-ops[2](elements["Γ₁"],f)
-ops[2](elements["Γ₃"],f)
-ops[3](elements["Γ₄"],f)
-# ops[4](elements["Γ₁"],kᵅ,fᵅ)
-ops[4](elements["Γ₂"],kᵅ,fᵅ)
-ops[4](elements["Γ₃"],kᵝ,fᵝ)
+dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+d = dt[1:nₚ]
+δd = dt[nₚ+1:end]
 
-# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-# d = dt[1:nₚ]
-# δd = dt[nₚ+1:end]
+push!(nodes,:d=>d,:δd=>δd)
 
-# push!(nodes,:d=>d,:δd=>δd)
-
-d = (k+kᵅ)\(f+fᵅ)
-# d = k\f
-push!(nodes,:d=>d)
-
-α = (EA/ρA)^0.5
-function 𝑢(x,t)
-    if x < α*(t-1)
-        return 2*α/π
-    elseif α*t < x
-        return 0.0
-    else
-        α/π*(1-cos(π*(t-x/α)))
-    end
-end
-
-# set𝝭!(elements["Ωᵍ"])
-# set∇𝝭!(elements["Ωᵍ"])
-# prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
-# L₂ = ops[5](elements["Ωᵍ"])
+𝐿₂ = log10(L₂(elements["Ωᵍ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -187,7 +180,7 @@ for (i,node) in enumerate(nodes)
     ys[i] = node.y
     # zs[i] = 𝑢(xs,ys)
     ds[i] = node.d
-    # δds[i] = node.δd
+    δds[i] = node.δd
 end
 face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
