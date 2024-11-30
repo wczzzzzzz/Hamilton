@@ -45,6 +45,8 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
+prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
@@ -188,10 +190,10 @@ end
 
 # mesh!(ax,xs,ys,face,color=zs)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
-meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
+meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.05)
 # meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
-# save("./fig/非均布 Γ₁_g_80.png",fig)
+# save("./fig/均布 Γ₁_g_80.png",fig)
 
     
