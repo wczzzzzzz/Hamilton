@@ -50,8 +50,42 @@ function import_hmd_Tri3(filename::String)
     elements["Ωᵇ"] = getPiecewiseElements(entities["Ω"], type, integrationorder)
     push!(elements["Ωᵇ"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
 
+
+    elements["Ω∩Γ₃"]
+
     gmsh.finalize()
     return elements, nodes
+end
+
+function getBoundaryGradientElement(as::Vector{T},bs::Vector{S}) where {T,S}
+    elms = S[]
+    x = Float64[]
+    y = Float64[]
+    z = Float64[]
+    ξ = Float64[]
+    η = Float64[]
+    𝑤 = Float64[]
+    n₁ = Float64[]
+    n₂ = Float64[]
+    𝐽 = Float64[]
+    data = Dict{Symbol,Tuple{Int,Vector{Float64}}}()
+    data[:x] = (2,x)
+    data[:y] = (2,y)
+    data[:z] = (2,z)
+    data[:ξ] = (2,ξ)
+    data[:η] = (2,η)
+    data[:𝑤] = (2,𝑤)
+    data[:n₁] = (2,n₁)
+    data[:n₂] = (2,n₂)
+    for a in as
+        indices_a = [xᵢ.𝐼 for xᵢ in a.𝓒]
+        for b in bs
+            indices_b = [xᵢ.𝐼 for xᵢ in b.𝓒]
+            if indices_a ⊂ indices_b
+                indices_turn = indexin(a,b)
+            end
+        end
+    end
 end
 
 function import_hmd_mix(filename1::String,filename2::String)
