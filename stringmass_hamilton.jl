@@ -7,7 +7,7 @@ q₀ = 1.0
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.001:1.0
+𝑡 = 0.0:0.05:8.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 𝑝 = 𝑚*𝜔.*(q̇₀/𝜔.*cos.(𝜔.*𝑡)-q₀.*sin.(𝜔.*𝑡))
@@ -16,7 +16,7 @@ p(t) = 𝑚*𝜔*(q̇₀/𝜔*cos(𝜔*t) - q₀*sin(𝜔*t))
 lines!(𝑡, 𝑥, color = :black)
 # lines!(𝑡, 𝑝, color = :black)
 
-t = 0.0:0.01:1.0
+t = 0.0:0.05:8.0
 nₚ = length(t)
 nₑ = nₚ-1
 
@@ -86,7 +86,8 @@ d = k\f
 # val = eigvals(kᵤₚ)
 val = eigvals(k)
 # val = eigvals(kᵤₚ*inv(kₚₚ)*kᵤₚ')
-
+e = d[1:nₚ] - 𝑥
+lines!(t, e, color = :red)
 lines!(t, d[1:nₚ], color = :blue)
 # lines!(t, d[nₚ+1:end-1], color = :blue)
 

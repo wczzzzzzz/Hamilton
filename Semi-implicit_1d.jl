@@ -1,12 +1,4 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie
-
-model = Model(Ipopt.Optimizer)
-
-include("import_hmd.jl")
-
-ndiv= 80
-elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
-nₚ = length(nodes)
+using   GLMakie
 
 k = 100
 m = 1.0
@@ -14,14 +6,16 @@ q̇₀ = 1.0
 q₀ = 1.0
 
 fig = Figure()
-Axis(fig[1, 1])
-𝑡 = 0.0:0.01:1.0
+# ax = Axis(fig[1, 1])
+ax = Axis(fig[1, 1], xlabel = "t", ylabel = "x",title = "欧拉迭代法与精确解的对比")
+𝑡 = 0.0:0.05:8.0
 𝜔 = (k/m)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
-lines!(𝑡, 𝑥, color = :black)
+lines!(ax, 𝑡, 𝑥, color = :black)
 
-T = 10
-Δt = 0.1
+T = 8.0
+Δt = 0.05
+t = 0.0:Δt:T
 nₜ = Int(T/Δt)
 
 q = zeros(nₜ+1)
@@ -37,9 +31,14 @@ for n in 1:nₜ
     q[n+1] = q[n] + Δt * q̇[n+1]  
 end
 
-lines!(t, q, color = :blue)
+lines!(ax, t, q, color = :blue)
 
+# e = q - 𝑥
+# lines!(t, e, color = :red)
+xlims!(ax, 0, 8)
 
 fig
 
-# save("./fig/一维/hmd_1d.png",fig)
+# save("./fig/一维/semi_8.png",fig)
+# save("./fig/一维/e.png",fig)
+

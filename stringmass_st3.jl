@@ -7,13 +7,13 @@ q₀ = 1.0
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.01:1.0
+𝑡 = 0.0:0.05:8.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 lines!(𝑡, 𝑥, color = :black)
 
-dt = 0.01
-t = collect(0.0:dt:1.0)
+dt = 0.05
+t = collect(0.0:dt:8.0)
 nₚ = length(t)
 nₑ = nₚ-1
 # for i in 2:nₚ-1
@@ -52,8 +52,10 @@ d = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 δd = d[nₚ+1:2*nₚ]
 d = d[1:nₚ]
 
+e = d - 𝑥
+lines!(t, e, color = :red)
 lines!(t, d, color = :blue)
-lines!(t, δd, color = :red)
+# lines!(t, δd, color = :red)
 
 # FEM weak test
 # k = zeros(nₚ,nₚ)
