@@ -11,8 +11,8 @@ using GLMakie
 include("import_hmd.jl")
 
 ndiv= 10
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -45,8 +45,6 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
@@ -66,18 +64,32 @@ kᵞ = zeros(nₚ,nₚ)
 
 𝑎(k)
 𝑓(f)
-𝑎ᵅ(kᵅ,fᵅ)
-𝑎ᵝ(kᵝ,fᵝ)
-𝑎ᵞ(kᵞ)
+k = [k -k;-k zeros(nₚ,nₚ)]
+f = [zeros(nₚ);-f]
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+println(length(getDOFs(elements["Γ₁"]∪elements["Γ₂"])))
+for i in getDOFs(elements["Γ₁"]∪elements["Γ₂"])
+    k[i,:] .= 0.0
+    k[:,i] .= 0.0
+    k[i,i] = 1.0
+end
+println(length(getDOFs(elements["Γ₃"])))
+for i in getDOFs(elements["Γ₃"])
+    k[nₚ+i,:] .= 0.0
+    k[:,nₚ+i] .= 0.0
+    k[nₚ+i,nₚ+i] = 1.0
+    f[nₚ+i] = 0.0
+end
+dt = k\f
+
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
 
 push!(nodes,:d=>d,:δd=>δd)
 
-𝐿₂ = log10(L₂(elements["Ωᵍ"]))
+# 𝐿₂ = log10(L₂(elements["Ωᵍ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -170,7 +182,6 @@ push!(nodes,:d=>d,:δd=>δd)
 
 fig = Figure()
 ax = Axis3(fig[1,1])
-# fig
 
 xs = zeros(nₚ)
 ys = zeros(nₚ)
@@ -190,10 +201,10 @@ end
 
 # mesh!(ax,xs,ys,face,color=zs)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
-meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.05)
+meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
 # meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
-# save("./fig/均布 Γ₁_g_80.png",fig)
+# save("./fig/非均布 Γ₁_g_80.png",fig)
 
     

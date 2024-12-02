@@ -11,8 +11,8 @@ using GLMakie
 include("import_hmd.jl")
 
 ndiv= 10
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -23,10 +23,10 @@ set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 set∇𝝭!(elements["Ωᵍ"])
+set∇𝝭!(elements["Ωᵇ"])
 
 ρA = 1e0
 EA = 1.0
-α = 1e15
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
     if x < t - 1
@@ -39,22 +39,24 @@ function 𝑢(x,t)
 end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
-prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
-prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
-prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
+prescribe!(elements["Ωᵇ"],:EA=>(x,y,z)->EA)
+prescribe!(elements["Ωᵇ"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Ω"],:k=>(x,y,z)->1e12)
+prescribe!(elements["Γ₁"],:α=>(x,y,z)->1e12)
+prescribe!(elements["Γ₂"],:α=>(x,y,z)->1e12)
+prescribe!(elements["Γ₃"],:α=>(x,y,z)->1e12)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
+𝑎ᵇ = ∫∫∇q∇pdxdt=>(elements["Ω"],elements["Ωᵇ"])
+𝑎ᵇᵇ = ∫∫∇q∇pdxdt=>elements["Ωᵇ"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
-# 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
@@ -62,16 +64,18 @@ kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
-kᵞ = zeros(nₚ,nₚ)
+kᵇ = zeros(nₚ,nₑ)
+kᵇᵇ = zeros(nₑ,nₑ)
 
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
-𝑎ᵞ(kᵞ)
+𝑎ᵇ(kᵇ)
+𝑎ᵇᵇ(kᵇᵇ)
+α = 1e0
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-# dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
+dt = [k+kᵅ -k -kᵇ;-k kᵝ zeros(nₚ,nₑ);-kᵇ' zeros(nₑ,nₚ+nₑ)]\[fᵅ;-f+fᵝ;zeros(nₑ)]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
 
@@ -190,10 +194,10 @@ end
 
 # mesh!(ax,xs,ys,face,color=zs)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
-meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.05)
+meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
 # meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
-# save("./fig/均布 Γ₁_g_80.png",fig)
+# save("./fig/非均布 Γ₁_g_80.png",fig)
 
     
