@@ -1,7 +1,7 @@
 
 using Revise, ApproxOperator, Printf, SparseArrays, LinearAlgebra, CairoMakie
 
-include("import_hmd_test.jl")
+include("import_hmd.jl")
 
 ndiv= 80
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
