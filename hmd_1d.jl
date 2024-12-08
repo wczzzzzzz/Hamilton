@@ -1,8 +1,8 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie
+using  ApproxOperator, CairoMakie
 
-model = Model(Ipopt.Optimizer)
+# model = Model(Ipopt.Optimizer)
 
-include("import_hmd_test.jl")
+include("import_hmd.jl")
 
 ndiv= 80
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
