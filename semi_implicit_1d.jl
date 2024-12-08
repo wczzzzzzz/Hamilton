@@ -6,7 +6,7 @@ q̇₀ = 1.0
 q₀ = 1.0
 
 fig = Figure()
-ax = Axis(fig[1, 1], xlabel = "t", ylabel = "x", title = "Leapfrog Method vs Exact Solution")
+ax = Axis(fig[1, 1], xlabel = "T", ylabel = "x", title = "symplectic Euler vs Exact Solution")
 𝜔 = (k/m)^0.5
 𝑢(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
 
@@ -26,13 +26,13 @@ for i in 1:nₜ
     q[i+1] = q[i] + Δt * q̇[i+1]
 end
 
-# points = Observable(Point2f[(0, q[1])])
+invisible_line = lines!(ax, [0, 0], [0, 0], color = :white, label="Δt=0.05", visible=false)
+blue_line = lines!(ax, t[1:2], q[1:2], color = :blue, label="symplectic Euler")
+black_line = lines!(ax, t[1:2], 𝑢.(t[1:2]), color = :black, label="Exact Solution")
+leg = Legend(fig[1, 2], [blue_line, black_line, invisible_line], ["symplectic Euler", "Exact Solution", "Δt=0.05"], position=(0.95, 0.95))
 
-# scatter!(ax, points, color = :blue)
-
-# scatter!(ax, points, color = :blue, markersize=10)
 nᵢ = 10
-record(fig, "./fig/一维/dian.gif", 1:nₜ,framerate = 5) do i
+record(fig, "./fig/一维/semi_implicit_1d.gif", 1:nₜ,framerate = 5) do i
     t = 0.0:Δt:i*Δt
     lines!(ax, t, q[1:i+1], color = :blue)
     t = 0.0:Δt/nᵢ:i*Δt
@@ -40,26 +40,10 @@ record(fig, "./fig/一维/dian.gif", 1:nₜ,framerate = 5) do i
 end
 
 
-# record(fig, "./fig/一维/xian.mp4", 1:nₜ) do frame
-#     q̈ = -k/m * q[frame]
-#     q̇[frame+1] = q̇[frame] + Δt * q̈
-#     q[frame+1] = q[frame] + Δt * q̇[frame+1]
-#     push!(points[], Point2f(𝑡[frame], q[frame+1]))
-#     lines!(ax, t, q, color = :blue)  
-# end
-
-# qx = Observable([t])
-# qy = Observable([q])
-
-# lines!(ax, qx, qy, color = :blue)
-
-# record(fig, "spring_mass_simulation.mp4", 1:nₜ) do frame
-#     q̈ = -k/m * q[frame]
-#     q̇[frame+1] = q̇[frame] + Δt * q̈
-#     q[frame+1] = q[frame] + Δt * q̇[frame+1]
-#     push!(points[], Point2f(qx[], t[frame]))
-#     push!(points[], Point2f(qy[], q[frame+1]))
-# end
+# e = q - 𝑥
+# lines!(t, e, color = :red)
 
 xlims!(ax, 0, 8)
 fig
+
+
