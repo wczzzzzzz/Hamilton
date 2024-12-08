@@ -10,9 +10,9 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 10
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
+ndiv= 16
+elements,nodes = import_hmd_Tri3("./msh/square_irregular_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -23,6 +23,7 @@ set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 set∇𝝭!(elements["Ωᵍ"])
+set∇𝝭!(elements["Ωᵇ"])
 
 ρA = 1e0
 EA = 1.0
@@ -39,14 +40,14 @@ function 𝑢(x,t)
 end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Ωᵇ"],:EA=>(x,y,z)->EA)
+prescribe!(elements["Ωᵇ"],:ρA=>(x,y,z)->ρA)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
@@ -54,28 +55,47 @@ prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
-# 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
+𝑎ᵇ = ∫∫∇q∇pdxdt=>(elements["Ω"],elements["Ωᵇ"])
+𝑎ᵇᵇ = ∫∫∇q∇pdxdt=>elements["Ωᵇ"]
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
-kᵅ = zeros(nₚ,nₚ)
-fᵅ = zeros(nₚ)
-kᵝ = zeros(nₚ,nₚ)
-fᵝ = zeros(nₚ)
+kᵇ = zeros(nₚ,nₑ)
+kᵇᵇ = zeros(nₑ,nₑ)
 
 𝑎(k)
 𝑓(f)
-𝑎ᵅ(kᵅ,fᵅ)
-𝑎ᵝ(kᵝ,fᵝ)
+𝑎ᵇ(kᵇ)
+𝑎ᵇᵇ(kᵇᵇ)
+β = -10.0e3
+k̄ = β*kᵇ*inv(kᵇᵇ)*kᵇ'
+# k = [k -k;-k zeros(nₚ,nₚ)]
+k = [k-k̄ -k+k̄;-k+k̄ -k̄]
+f = [zeros(nₚ);-f]
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+println(length(getDOFs(elements["Γ₁"]∪elements["Γ₂"])))
+for i in getDOFs(elements["Γ₁"]∪elements["Γ₂"])
+    k[i,:] .= 0.0
+    k[:,i] .= 0.0
+    k[i,i] = 1.0
+end
+println(length(getDOFs(elements["Γ₃"])))
+for i in getDOFs(elements["Γ₃"])
+    k[nₚ+i,:] .= 0.0
+    k[:,nₚ+i] .= 0.0
+    k[nₚ+i,nₚ+i] = 1.0
+    f[nₚ+i] = 0.0
+end
+dt = k\f
+
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
 
 push!(nodes,:d=>d,:δd=>δd)
 
-𝐿₂ = log10(L₂(elements["Ωᵍ"]))
+# 𝐿₂ = log10(L₂(elements["Ωᵍ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -169,7 +189,6 @@ push!(nodes,:d=>d,:δd=>δd)
 fig = Figure()
 ax1 = Axis3(fig[1,1])
 ax2 = Axis3(fig[1,2])
-# fig
 
 xs = zeros(nₚ)
 ys = zeros(nₚ)
@@ -193,6 +212,6 @@ meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.1)
 meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
-# save("./fig/均布 Γ₁_g_80.png",fig)
+# save("./fig/非均布 Γ₁_g_80.png",fig)
 
     

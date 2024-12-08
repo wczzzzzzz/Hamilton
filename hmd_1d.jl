@@ -1,6 +1,6 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie
+using  ApproxOperator, CairoMakie
 
-model = Model(Ipopt.Optimizer)
+# model = Model(Ipopt.Optimizer)
 
 include("import_hmd.jl")
 
