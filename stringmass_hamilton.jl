@@ -1,19 +1,21 @@
 using CairoMakie, LinearAlgebra
 
-𝑘 = 1e2
+𝑘 = 100
 𝑚 = 1.0
 q̇₀ = 5.0
 q₀ = 1.0
 
 fig = Figure()
-Axis(fig[1, 1])
+# Axis(fig[1, 1])
+ax = Axis(fig[1, 1], xlabel = "T", ylabel = "x",title = "Hamilton vs Exact Solution")
 𝑡 = 0.0:0.05:8.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 𝑝 = 𝑚*𝜔.*(q̇₀/𝜔.*cos.(𝜔.*𝑡)-q₀.*sin.(𝜔.*𝑡))
 u(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
 p(t) = 𝑚*𝜔*(q̇₀/𝜔*cos(𝜔*t) - q₀*sin(𝜔*t))
-lines!(𝑡, 𝑥, color = :black)
+lines!(ax, 𝑡, 𝑥, color = :black)
+
 # lines!(𝑡, 𝑝, color = :black)
 
 t = 0.0:0.05:8.0
@@ -87,10 +89,19 @@ d = k\f
 val = eigvals(k)
 # val = eigvals(kᵤₚ*inv(kₚₚ)*kᵤₚ')
 e = d[1:nₚ] - 𝑥
-lines!(t, e, color = :red)
-lines!(t, d[1:nₚ], color = :blue)
+# lines!(ax, t, e, color = :red)
+lines!(ax, t, d[1:nₚ], color = :blue)
+
 # lines!(t, d[nₚ+1:end-1], color = :blue)
+
+# invisible_line = lines!(ax, [0, 0], [0, 0], color = :white, label="Δt=0.05", visible=false)
+# blue_line = lines!(ax, t[1:2], q[1:2], color = :blue, label="Hamilton")
+# black_line = lines!(ax, t[1:2], 𝑢.(t[1:2]), color = :black, label="Exact Solution")
+# red_line = lines!(ax, t[1:2], e[1:2], color = :red, label="error")
+# leg = Legend(fig[1, 2], [red_line, invisible_line], ["error", "Δt=0.05"], position=(0.95, 0.95))
+# leg = Legend(fig[1, 2], [blue_line, black_line, invisible_line], ["Hamilton", "Exact Solution", "Δt=0.05"], position=(0.95, 0.95))
 
 fig
 
-# save("./fig/一维解.png",fig)
+# save("./fig/一维/hmd_1d.png",fig)
+# save("./fig/一维/hmd_1d_e.png",fig)

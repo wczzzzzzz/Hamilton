@@ -2,9 +2,9 @@ using  ApproxOperator, JuMP, Ipopt, CairoMakie
 
 model = Model(Ipopt.Optimizer)
 
-include("import_hmd_test.jl")
+include("import_hmd.jl")
 
-ndiv= 80
+ndiv= 160
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
@@ -14,12 +14,12 @@ set𝝭!(elements["Γᵍ"])
 
 kᶜ = 100
 m = 1.0
-q̇₀ = 5.0
+q̇₀ = 1.0
 q₀ = 1.0
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.01:1.0
+𝑡 = 0.0:0.05:8.0
 𝜔 = (kᶜ/m)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 lines!(𝑡, 𝑥, color = :black)
@@ -51,8 +51,10 @@ d = [k+kα k;k kβ]\[f+fα;f]
 d = d[1:nₚ]
 
 
-lines!(nodes.x[[1,3:end...,2]], d, color = :blue)
+lines!(nodes.x, d, color = :blue)
 
+# e = d - 𝑥
+# lines!(𝑡, e, color = :red)
 
 fig
 
