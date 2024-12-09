@@ -7,7 +7,7 @@ q₀ = 1.0
 
 fig = Figure()
 # ax = Axis(fig[1, 1])
-ax = Axis(fig[1, 1], xlabel = "T", ylabel = "u")
+ax = Axis(fig[1, 1], xlabel = "T", ylabel = "x")
 𝑡 = 0.0:0.005:8.0
 𝜔 = (k/m)^0.5
 𝑢(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
@@ -47,7 +47,7 @@ xlims!(ax, 0, 8)
 
 fig
 
-# save("./fig/一维/Explicit_1d.png",fig)
+save("./fig/一维/Explicit_1d.png",fig)
 # save("./fig/一维/Explicit_1d_e.png",fig)
 
 

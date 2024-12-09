@@ -1,10 +1,11 @@
 using  ApproxOperator, CairoMakie
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫q̇mpqkpdx
 
 # model = Model(Ipopt.Optimizer)
 
 include("import_hmd.jl")
 
-ndiv= 160
+ndiv= 1600
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
@@ -12,28 +13,26 @@ set𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γᵍ"])
 
-kᶜ = 100
+kᶜ = 100.0
 m = 1.0
 q̇₀ = 1.0
 q₀ = 1.0
+prescribe!(elements["Ω"],:m=>(x,y,z)->m)
+prescribe!(elements["Ω"],:kᶜ=>(x,y,z)->kᶜ)
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.05:8.0
+𝑡 = 0.0:0.005:8.0
 𝜔 = (kᶜ/m)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
-lines!(𝑡, 𝑥, color = :black)
-
-ops = [
-       Operator{:∫q̇mpqkpdx}(:m=>m,:kᶜ=>kᶜ),
-]
+# lines!(𝑡, 𝑥, color = :black)
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
 
-# ops[2](elements["Γᵍ"],k,f)
+𝑎 = ∫q̇mpqkpdx=>elements["Ω"]
 
-ops[1](elements["Ω"],k)
+𝑎(k)
 
 𝑃₀ = m*q̇₀
 f[1] -= 𝑃₀
@@ -51,10 +50,11 @@ d = [k+kα k;k kβ]\[f+fα;f]
 d = d[1:nₚ]
 
 
-lines!(nodes.x, d, color = :blue)
+# lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2]], color = :blue)
+# lines!(nodes.x, d, color = :blue)
 
-# e = d - 𝑥
-# lines!(𝑡, e, color = :red)
+e = d - 𝑥
+lines!(𝑡, e[[1,3:end...,2]], color = :red)
 
 fig
 

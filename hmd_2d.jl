@@ -10,10 +10,10 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 10
+ndiv= 80
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
 elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/bar_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
@@ -169,7 +169,6 @@ push!(nodes,:d=>d,:δd=>δd)
 fig = Figure()
 ax1 = Axis3(fig[1,1])
 ax2 = Axis3(fig[1,2])
-# fig
 
 xs = zeros(nₚ)
 ys = zeros(nₚ)

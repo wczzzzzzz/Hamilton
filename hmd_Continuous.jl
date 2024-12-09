@@ -4,7 +4,8 @@ using GLMakie
 
 model = Model(Ipopt.Optimizer)
 
-include("import_hmd_test.jl")
+include("import_hmd.jl")
+# include("import_hmd_test.jl")
 
 ndiv= 40
 # elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")

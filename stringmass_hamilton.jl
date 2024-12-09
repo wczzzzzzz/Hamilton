@@ -8,7 +8,7 @@ q₀ = 1.0
 fig = Figure()
 # Axis(fig[1, 1])
 ax = Axis(fig[1, 1], xlabel = "T", ylabel = "x",title = "Hamilton vs Exact Solution")
-𝑡 = 0.0:0.05:8.0
+𝑡 = 0.0:0.001:8.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 𝑝 = 𝑚*𝜔.*(q̇₀/𝜔.*cos.(𝜔.*𝑡)-q₀.*sin.(𝜔.*𝑡))
@@ -18,7 +18,7 @@ lines!(ax, 𝑡, 𝑥, color = :black)
 
 # lines!(𝑡, 𝑝, color = :black)
 
-t = 0.0:0.05:8.0
+t = 0.0:0.001:8.0
 nₚ = length(t)
 nₑ = nₚ-1
 
