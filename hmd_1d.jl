@@ -5,7 +5,7 @@ import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫q̇mpqkpdx
 
 include("import_hmd.jl")
 
-ndiv= 1600
+ndiv= 160
 elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 
@@ -24,8 +24,9 @@ fig = Figure()
 Axis(fig[1, 1])
 𝑡 = 0.0:0.005:8.0
 𝜔 = (kᶜ/m)^0.5
+# 𝑢(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
-lines!(𝑡, 𝑥, color = :black)
+# lines!(𝑡, 𝑥, color = :black)
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
@@ -37,7 +38,7 @@ f = zeros(nₚ)
 𝑃₀ = m*q̇₀
 f[1] -= 𝑃₀
 
-α = 1e9
+α = 1e12
 kα = zeros(nₚ,nₚ)
 fα = zeros(nₚ)
 kα[1,1] += α
@@ -50,11 +51,14 @@ d = [k+kα -k;-k kβ]\[fα;f]
 d = d[1:nₚ]
 
 
-# lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2]], color = :blue)
+lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2]], color = :blue)
 # lines!(nodes.x, d, color = :blue)
 
-e = d - 𝑥
+e = d - 𝑢.(t)
+# e = d - 𝑥
+
 lines!(𝑡, e[[1,3:end...,2]], color = :red)
+
 
 fig
 

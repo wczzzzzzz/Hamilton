@@ -7,7 +7,7 @@ q₀ = 1.0
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.05:8.0
+𝑡 = 0.0:0.005:8.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 𝑢(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
@@ -87,3 +87,5 @@ lines!(t, d, color = :blue)
 # lines!(t, d, color = :red)
 
 fig
+
+# save("./fig/一维/string_1d.png",fig)
