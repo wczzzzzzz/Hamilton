@@ -24,7 +24,7 @@ Axis(fig[1, 1])
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 lines!(𝑡, 𝑥, color = :black)
 
-ops = [
+
        Operator{:∫q̇mpqkpdx}(:m=>m,:kᶜ=>kᶜ),
 ]
 
@@ -46,7 +46,7 @@ fα[1] += α*q₀
 kβ = zeros(nₚ,nₚ)
 kβ[nₚ,nₚ] += α
 
-d = [k+kα k;k kβ]\[f+fα;f]
+d = [k+kα -k;-k kβ]\[fα;f]
 δd = d[nₚ+1:end]
 d = d[1:nₚ]
 

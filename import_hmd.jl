@@ -12,11 +12,11 @@ function import_hmd_bar(filename::String)
     elements["Ω"] = getElements(nodes, entities["Ω"], integrationorder)
     elements["Γᵍ"] = getElements(nodes, entities["Γᵍ"], integrationorder)
     elements["Γᵗ"] = getElements(nodes, entities["Γᵗ"], integrationorder)
-    push!(elements["Ω"], :𝝭=>:𝑠,:∂𝝭∂x=>:𝑠)
-    push!(elements["Γᵍ"], :𝝭=>:𝑠)
-    push!(elements["Γᵗ"], :𝝭=>:𝑠)
+    push!(elements["Ω"], :𝝭,:∂𝝭∂x)
+    push!(elements["Γᵍ"], :𝝭)
+    push!(elements["Γᵗ"], :𝝭)
 
-    # gmsh.finalize()
+    gmsh.finalize()
     return elements, nodes
 end
 
