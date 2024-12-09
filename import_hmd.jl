@@ -16,7 +16,7 @@ function import_hmd_bar(filename::String)
     push!(elements["Γᵍ"], :𝝭)
     push!(elements["Γᵗ"], :𝝭)
 
-    # gmsh.finalize()
+    gmsh.finalize()
     return elements, nodes
 end
 
