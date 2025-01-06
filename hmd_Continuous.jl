@@ -1,15 +1,16 @@
 using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX, LinearAlgebra
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
+import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
 
 using GLMakie
 
-model = Model(Ipopt.Optimizer)
 
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 40
+ndiv= 20
 # elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
@@ -21,20 +22,26 @@ set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 
 α = 1e9
-ρA = 1
-EA = 1
+ρA = 1.0
+EA = 1.0
 l = 4
 a = 1
 q̇ = 1.0
 φ(x) = sin(π*x/l)
-prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
+# prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
 # prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->φ(x))
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
-# prescribe!(elements["Γ₃"],:t=>(x,y,z)->q̇)  
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:g=>(x,y,z)->0.0)
-
+prescribe!(elements["Γ₄"],:t=>(x,y,z)->0.0)
+prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
+prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
+# prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
@@ -43,29 +50,24 @@ fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
 
-ops = [
-       Operator{:∫∫q̇mpqkpdx}(:ρA=>ρA,:EA=>EA),
-       Operator{:∫𝑃δudx}(),
-       Operator{:∫vtdΓ}(),
-       Operator{:∫vgdΓ}(:α=>α),
-]
+𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
+𝑓 = ∫vtdΓ=>elements["Γ₄"]
+# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
 
-
-
-ops[1](elements["Ω"],k)
-ops[2](elements["Γ₁"],f)
-# ops[3](elements["Γ₃"],fᵅ)
-ops[4](elements["Γ₁"],kᵅ,fᵅ)
-ops[4](elements["Γ₂"],kᵅ,fᵅ)
-# ops[4](elements["Γ₃"],kᵝ,fᵝ)
-ops[4](elements["Γ₄"],kᵅ,fᵅ)
+𝑎ᵅ(kᵅ,fᵅ)
+𝑓(f)
+𝑎(k)
 
 # d = k\f
 d = (k+kᵅ)\(f+fᵅ)
-# d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-# d₁ = d[1:nₚ]
-# # δd = d[nₚ+1:end]
 d = d[1:nₚ]
+
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# d = dt[1:nₚ]
+
+# d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
+# # δd = d[nₚ+1:end]
 push!(nodes,:d=>d)
 
 𝑢(x,t) = cos.(π.*a.*t/l).*sin.(π.*x/l)
@@ -95,7 +97,7 @@ end
 
 # mesh!(ax,xs,ys,face,color=zs)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
-meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.1)
+meshscatter!(ax,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 

@@ -54,7 +54,7 @@ d = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 d = d[1:nₚ]
 
 e = d - 𝑢.(t)
-lines!(t, e, color = :red)
+# lines!(t, e, color = :red)
 lines!(t, d, color = :blue)
 # lines!(t, δd, color = :red)
 
@@ -89,3 +89,4 @@ lines!(t, d, color = :blue)
 fig
 
 # save("./fig/一维/string_1d.png",fig)
+# save("./fig/一维/string_1d_e.png",fig)

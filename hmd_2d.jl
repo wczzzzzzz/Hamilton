@@ -10,10 +10,12 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 80
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
+ndiv= 20
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
@@ -26,7 +28,7 @@ set∇𝝭!(elements["Ωᵍ"])
 
 ρA = 1e0
 EA = 1.0
-α = 1e15
+α = 1e7
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
     if x < t - 1
@@ -52,8 +54,9 @@ prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
-𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
-𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
+# 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
 # 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
 
 k = zeros(nₚ,nₚ)
@@ -66,9 +69,10 @@ fᵝ = zeros(nₚ)
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
-𝑎ᵝ(kᵝ,fᵝ)
+# 𝑎ᵝ(kᵝ,fᵝ)
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+dt =(k+kᵅ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
@@ -81,18 +85,26 @@ push!(nodes,:d=>d,:δd=>δd)
 #     x = nodes.x[i]
 #     y = nodes.y[i]
 #     d₁ = d[i]
-#     Δ = d[i] - 𝑢(x,y)
-#         index = [10,20,40,80]
-#         XLSX.openxlsx("./excel/Non-uniform.xlsx", mode="rw") do xf
-#         Sheet = xf[4]
-#         ind = findfirst(n->n==ndiv,index)+i
-#         Sheet["A"*string(ind)] = x
-#         Sheet["B"*string(ind)] = y
-#         Sheet["C"*string(ind)] = d₁
-#         Sheet["D"*string(ind)] = Δ
-#         # Sheet["E"*string(ind)] = log10(L₂)
-#         # Sheet["F"*string(ind)] = log10(4/ndiv)
+#     # Δ = d[i] - 𝑢(x,y)
+#         index = [20,40,80,100]
+#         XLSX.openxlsx("./excel/test_x=20.xlsx", mode="rw") do xf
+#         Sheet = xf[1]
+#         ind = findfirst(n->n==ndiv,index)+1
+#         # Sheet["A"*string(ind)] = x
+#         # Sheet["B"*string(ind)] = y
+#         # Sheet["C"*string(ind)] = d₁
+#         # Sheet["D"*string(ind)] = Δ
+#         Sheet["E"*string(ind)] = 𝐿₂
+#         Sheet["F"*string(ind)] = log10(4/ndiv)
 #     end
+# end
+
+# index = [10,20,40,80]
+# XLSX.openxlsx("./excel/square.xlsx", mode="rw") do xf
+#     Sheet = xf[1]
+#     ind = findfirst(n->n==ndiv,index)+1
+#     Sheet["A"*string(ind)] = 𝐿₂
+#     Sheet["B"*string(ind)] = log10(4/ndiv)
 # end
 
 # push!(nodes,:d=>d₁)
@@ -168,7 +180,7 @@ push!(nodes,:d=>d,:δd=>δd)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
-ax2 = Axis3(fig[1,2])
+# ax2 = Axis3(fig[1,2])
 
 xs = zeros(nₚ)
 ys = zeros(nₚ)
@@ -179,7 +191,7 @@ for (i,node) in enumerate(nodes)
     ys[i] = node.y
     # zs[i] = 𝑢(xs,ys)
     ds[i] = node.d
-    δds[i] = node.δd
+    # δds[i] = node.δd
 end
 face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
@@ -188,10 +200,12 @@ end
 
 # mesh!(ax,xs,ys,face,color=zs)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
-meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.1)
-meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
+meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
+# meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
 # save("./fig/均布 Γ₁_g_80.png",fig)
+# save("./fig/test_x=20/t=98.png",fig)
+# save("./fig/四边形节点/t=100.png",fig)
 
     

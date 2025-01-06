@@ -3,9 +3,10 @@ using ApproxOperator, GLMakie
 
 import Gmsh: gmsh
 
-ndiv = 10
+ndiv = 111
 gmsh.initialize()
-gmsh.open("./msh/square_"*string(ndiv)*".msh")
+gmsh.open("./msh/test_x=20/"*string(ndiv)*".msh")
+# gmsh.open("./msh/square_"*string(ndiv)*".msh")
 # gmsh.open("./msh/MorleysAcuteSkewPlate_"*string(ndiv)*".msh")
 # gmsh.open("./msh/SquarePlate_"*string(ndiv)*".msh")
 entities = getPhysicalGroups()
@@ -13,15 +14,15 @@ nodes = get𝑿ᵢ()
 
 elements = Dict{String,Vector{ApproxOperator.AbstractElement}}()
 elements["Ω"] = getElements(nodes,entities["Ω"])
-elements["Γ₁"] = getElements(nodes,entities["Γ₁"])
-elements["Γ₂"] = getElements(nodes,entities["Γ₂"])
-elements["Γ₃"] = getElements(nodes,entities["Γ₃"])
-elements["Γ₄"] = getElements(nodes,entities["Γ₄"])
+elements["Γ¹"] = getElements(nodes,entities["Γ¹"])
+elements["Γ²"] = getElements(nodes,entities["Γ²"])
+elements["Γ³"] = getElements(nodes,entities["Γ³"])
+elements["Γ⁴"] = getElements(nodes,entities["Γ⁴"])
 # elements["Γᵗ"] = getElements(nodes,entities["Γᵗ"])
 # elements["Γᵍ"] = getElements(nodes,entities["Γᵍ"])
 # elements["∂Ω"] = elements["Γᵍ"]∪elements["Γᵗ"]
 # elements["Γᵉ"] = getElements(nodes,entities["Γᵉ"])
-elements["∂Ω"] = elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
+elements["∂Ω"] = elements["Γ¹"]∪elements["Γ²"]∪elements["Γ³"]∪elements["Γ⁴"]
 
 # gmsh.finalize()
 
@@ -38,14 +39,16 @@ z = 0
 ps = Point3f.(x,y,z)
 scatter!(ps, 
     marker=:circle,
-    markersize = 10,
+    markersize = 2,
     color = :black
 )
 
 # elements
 for elm in elements["Ω"]
-    x = [x.x for x in elm.𝓒[[1,2,3,1]]]
-    y = [x.y for x in elm.𝓒[[1,2,3,1]]]
+    # x = [x.x for x in elm.𝓒[[1,2,3,1]]]
+    # y = [x.y for x in elm.𝓒[[1,2,3,1]]]
+    x = [x.x for x in elm.𝓒[[1,2,3,4]]]
+    y = [x.y for x in elm.𝓒[[1,2,3,4]]]
 
     lines!(x,y,linestyle = :dash, linewidth = 0.5, color = :black)
 end
@@ -56,10 +59,11 @@ for elm in elements["∂Ω"]
     ξ² = [x.y for x in elm.𝓒]
     x =  [x.x for x in elm.𝓒]
     y =  [x.y for x in elm.𝓒]
-    lines!(x,y,linewidth = 1.5, color = :black)
+    lines!(x,y,linewidth = 0.5, color = :black)
 end
 
-# save("./png/Circular_"*string(ndiv)*"_msh.png",f)
-save("./fig/square_"*string(ndiv)*".png",f)
-# save("./png/SquarePlate_"*string(ndiv)*"_msh.png",f)
+# save("./fig/square_"*string(ndiv)*".png",f)
+save("./fig/三角形节点网格/t="*string(ndiv)*".png",f)
+
+
 f

@@ -92,8 +92,8 @@ y = ys[i]
      XLSX.openxlsx("./excel/exact_solution.xlsx", mode="rw") do xf
     Sheet = xf[2]
     ind = findfirst(n->n==ndiv,11)+i
-        Sheet["C"*string(ind)] = x
-        Sheet["D"*string(ind)] = y
+    Sheet["C"*string(ind)] = x
+    Sheet["D"*string(ind)] = y
     
 end
 end
