@@ -1,6 +1,6 @@
 using  ApproxOperator
 
-import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, stabilization_bar_LSG
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
 
 using GLMakie
@@ -13,12 +13,14 @@ include("import_hmd.jl")
 ndiv= 20
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
+set∇²𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
@@ -41,38 +43,44 @@ function 𝑢(x,t)
 end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Ω"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
-# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+s = stabilization_bar_LSG=>elements["Ω"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
+# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 # 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+
 # 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
 
 k = zeros(nₚ,nₚ)
+kˢ = zeros(nₚ,nₚ)
 f = zeros(nₚ)
 kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
 
+s(kˢ)
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
 # 𝑎ᵝ(kᵝ,fᵝ)
 
 # dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-dt =(k+kᵅ)\(f+fᵅ)
+# dt =(k+kᵅ)\(f+fᵅ)
+dt =(k+kᵅ+kˢ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
@@ -193,7 +201,7 @@ for (i,node) in enumerate(nodes)
     ds[i] = node.d
     # δds[i] = node.δd
 end
-face = zeros(nₑ,3)
+face = zeros(nₑ,6)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
@@ -204,8 +212,8 @@ meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
-# save("./fig/均布 Γ₁_g_80.png",fig)
 # save("./fig/test_x=20/t=98.png",fig)
 # save("./fig/四边形节点/t=100.png",fig)
+# save("./fig/锁三边x=20/三维图/t=25.png",fig)
 
     

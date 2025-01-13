@@ -2,7 +2,7 @@
 a = 4.0;
 b = 4.0;
 n = 21;
-m = 101;
+m = 21;
 
 Point(1) = {0.0, 0.0, 0.0};
 Point(2) = {  a, 0.0, 0.0};
@@ -32,6 +32,8 @@ Physical Curve("Γ⁴") = {4};
 Physical Surface("Ω") = {1};
 
 Mesh.Algorithm = 9;
-Mesh.MshFileVersion = 2;
+//Mesh.MshFileVersion = 2;
+Mesh.SecondOrderIncomplete = 1;
 Mesh 2;
-RecombineMesh;
+//RecombineMesh;
+SetOrder 2;

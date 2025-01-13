@@ -10,11 +10,11 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 111
+ndiv= 16
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -46,16 +46,17 @@ prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
-𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
-𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
+# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+# 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
 # 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
 
 k = zeros(nₚ,nₚ)
@@ -70,7 +71,8 @@ fᵝ = zeros(nₚ)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+dt =(k+kᵅ)\(f+fᵅ)
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
 
@@ -93,7 +95,7 @@ ds = [nodes[i].d for i in xs]
 # ys[i] = node.y
 # ds[i] = node.d
 
-face = zeros(nₑ,4)
+face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
@@ -106,6 +108,7 @@ fig
 
 # save("./fig/hmd_2d_二维图_Tri3/t=100.png",fig)
 # save("./fig/hmd_2d_二维图_Quad/t=100.png",fig)
+# save("./fig/锁三边x=20/二维图/t=16.png",fig)
 
 
     
