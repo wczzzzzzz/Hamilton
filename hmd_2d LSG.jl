@@ -10,7 +10,7 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 20
+ndiv= 16
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
@@ -30,7 +30,8 @@ set∇𝝭!(elements["Ωᵍ"])
 
 ρA = 1e0
 EA = 1.0
-α = 1e2
+α = 1e7
+Β = 1e4
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
     if x < t - 1
@@ -43,7 +44,7 @@ function 𝑢(x,t)
 end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
-prescribe!(elements["Ω"],:α=>(x,y,z)->α)
+prescribe!(elements["Ω"],:Β=>(x,y,z)->Β)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
