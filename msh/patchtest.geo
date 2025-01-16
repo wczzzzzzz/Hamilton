@@ -22,9 +22,8 @@ Plane Surface(1) = {1};
 Transfinite Curve{2,4} = m;
 Transfinite Curve{1,3} = n;
 
-Transfinite Surface{1};
-// Physical Curve("Γᵗ₁") = {2};
-// Physical Curve("Γᵗ₂") = {3};
+//Transfinite Surface{1};
+
 Physical Curve("Γ¹") = {1};
 Physical Curve("Γ²") = {2};
 Physical Curve("Γ³") = {3};

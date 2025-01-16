@@ -108,23 +108,23 @@ end
 # prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 # L₂ = ops[6](elements["Ωᵍ"])
 
-for i in 1:nₚ
-    x = nodes.x[i]
-    y = nodes.y[i]
-    d₁ = d[i]
-    Δ = d[i] - 𝑢(x,y)
-        index = 8
-        XLSX.openxlsx("./excel/mix_formulation.xlsx", mode="rw") do xf
-        Sheet = xf[1]
-        ind = findfirst(n->n==ndivs,index)+i
-        Sheet["A"*string(ind)] = x
-        Sheet["B"*string(ind)] = y
-        Sheet["C"*string(ind)] = d₁
-        Sheet["D"*string(ind)] = Δ
-        # Sheet["E"*string(ind)] = log10(L₂)
-        # Sheet["F"*string(ind)] = log10(4/ndiv)
-    end
-end
+# for i in 1:nₚ
+#     x = nodes.x[i]
+#     y = nodes.y[i]
+#     d₁ = d[i]
+#     Δ = d[i] - 𝑢(x,y)
+#         index = 8
+#         XLSX.openxlsx("./excel/mix_formulation.xlsx", mode="rw") do xf
+#         Sheet = xf[1]
+#         ind = findfirst(n->n==ndivs,index)+i
+#         Sheet["A"*string(ind)] = x
+#         Sheet["B"*string(ind)] = y
+#         Sheet["C"*string(ind)] = d₁
+#         Sheet["D"*string(ind)] = Δ
+#         # Sheet["E"*string(ind)] = log10(L₂)
+#         # Sheet["F"*string(ind)] = log10(4/ndiv)
+#     end
+# end
 
 
 

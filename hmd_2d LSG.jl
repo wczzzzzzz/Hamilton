@@ -10,11 +10,11 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 16
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
+ndiv= 17
+elements,nodes = import_hmd_Tri6("./msh/Non-uniform/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
@@ -31,7 +31,7 @@ set∇𝝭!(elements["Ωᵍ"])
 ρA = 1e0
 EA = 1.0
 α = 1e7
-Β = 1e4
+Β = 1e2
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
     if x < t - 1
@@ -213,8 +213,10 @@ meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
-# save("./fig/Tri6/+α/t=19.png",fig)
-# save("./fig/Tri6/-α/1e10.png",fig)
+# save("./fig/hmd_2d LSG/锁三边/均布/+β/1e10.png",fig)
+# save("./fig/hmd_2d LSG/锁三边/均布/-β/1e10.png",fig)
+# save("./fig/hmd_2d LSG/锁三边/均布/β=1e2/t=25.png",fig)
+# save("./fig/hmd_2d LSG/锁三边/非均布/β=1e2/t=25.png",fig)
 
 
     

@@ -10,17 +10,17 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 19
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
+ndiv= 10
+elements,nodes = import_hmd_Tri6("./msh/Non-uniform/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
-# set∇²𝝭!(elements["Ω"])
+set∇²𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
@@ -30,7 +30,7 @@ set∇𝝭!(elements["Ωᵍ"])
 
 ρA = 1e0
 EA = 1.0
-α = 1e2
+α = 1e7
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
     if x < t - 1
@@ -43,7 +43,6 @@ function 𝑢(x,t)
 end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
-# prescribe!(elements["Ω"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
@@ -57,7 +56,6 @@ prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
-# s = stabilization_bar_LSG=>elements["Ω"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 # 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
@@ -72,7 +70,6 @@ fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
 
-# s(kˢ)
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
@@ -80,7 +77,6 @@ fᵝ = zeros(nₚ)
 
 # dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 dt =(k+kᵅ)\(f+fᵅ)
-# dt =(k+kᵅ+kˢ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
@@ -201,7 +197,7 @@ for (i,node) in enumerate(nodes)
     ds[i] = node.d
     # δds[i] = node.δd
 end
-face = zeros(nₑ,3)
+face = zeros(nₑ,6)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
@@ -212,9 +208,12 @@ meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
-# save("./fig/test_x=20/t=98.png",fig)
-# save("./fig/四边形节点/t=100.png",fig)
-# save("./fig/锁三边x=20/三维图/t=25.png",fig)
-# save("./fig/Tri3_1e2/t=10.png",fig)
+# save("./fig/hmd_2d/test_x=20/t=98.png",fig)
+# save("./fig/hmd_2d/四边形节点/t=100.png",fig)
+# save("./fig/hmd_2d/锁三边x=20/Tri3/三维图/t=25.png",fig)
+# save("./fig/hmd_2d/锁三边x=20/Tri6/均布/t=25.png",fig)
+# save("./fig/hmd_2d/锁三边x=20/Tri6/非均布/t=15.png",fig)
+# save("./fig/hmd_2d/Tri6/均布/t=25.png",fig)
+
 
     
