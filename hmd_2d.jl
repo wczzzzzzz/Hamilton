@@ -10,8 +10,8 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 10
-elements,nodes = import_hmd_Tri6("./msh/Non-uniform/"*string(ndiv)*".msh")
+ndiv= 15
+elements,nodes = import_hmd_Tri6("./msh/Non-uniform_Tri6/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
@@ -48,17 +48,16 @@ prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
-# prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
+prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
-prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
-𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
-# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
-# 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
+𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
 
 # 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
 
@@ -73,17 +72,17 @@ fᵝ = zeros(nₚ)
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
-# 𝑎ᵝ(kᵝ,fᵝ)
+𝑎ᵝ(kᵝ,fᵝ)
 
-# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-dt =(k+kᵅ)\(f+fᵅ)
+dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# dt =(k+kᵅ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
 
 push!(nodes,:d=>d,:δd=>δd)
 
-𝐿₂ = log10(L₂(elements["Ωᵍ"]))
+# 𝐿₂ = log10(L₂(elements["Ωᵍ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
