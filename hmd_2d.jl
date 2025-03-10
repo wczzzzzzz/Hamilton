@@ -10,11 +10,11 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 15
-elements,nodes = import_hmd_Tri6("./msh/Non-uniform_Tri6/"*string(ndiv)*".msh")
+ndiv= 20
+# elements,nodes = import_hmd_Tri6("./msh/Non-uniform_Tri6/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
@@ -37,7 +37,7 @@ function 𝑢(x,t)
         return 2/π
     elseif x > t
         return 0.0
-    else
+    # else
         return (1-cos(π*(t - x)))/π
     end
 end
