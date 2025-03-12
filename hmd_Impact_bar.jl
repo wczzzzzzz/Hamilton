@@ -4,7 +4,7 @@ import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
 
 using GLMakie
-using SparseArrays
+using WriteVTK
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
@@ -55,6 +55,7 @@ kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
+σ = zeros(nₚ)
 
 𝑎(k)
 𝑓(f)
@@ -65,45 +66,42 @@ dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 d = dt[1:nₚ]
 push!(nodes,:d=>d)
 
-u = d
-v = dt[nₚ+1:end]
+xs = [node.x for node in nodes]'
+ys = [node.y for node in nodes]'
+zs = [node.z for node in nodes]'
+points = [xs; ys; zs]
 
-function compute_stress(u, EA, dx)
-    n = length(u)
-    stress = zeros(nₚ)
-    for i in 2:n
-        ϵ = (u[i] - u[i - 1]) / dx
-        stress[i] = EA * ϵ
+# cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
+
+# vtk_grid("./vtk/碰撞_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+#     vtk["碰撞"] = d
+# end
+
+fill!(u,0.0)
+fill!(σ,0.0)
+for (j,p) in enumerate(elements["Ω"])
+    ξ, = p.𝓖
+    N = ξ[:𝝭]
+    B₁ = ξ[:∂𝝭∂x]
+    ε = 0.0
+    for (i,xᵢ) in enumerate(p.𝓒)
+        u[j] += N[i]*xᵢ.d
+        ε += B₁[i]*xᵢ.d
     end
-    stress[1] = stress[2]
-    return stress
+    σ[j] = EA*ε
+end
+vtk_grid("./vtk/应力_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+    vtk["应力"] = σ
 end
 
-xs = [node.x for node in nodes]
-
-t = 0.5
-stress = compute_stress(u, EA, dx)
-
-fig = Figure()
-ax = Axis(fig[1, 1], xlabel = "x", ylabel = "Stress")
-lines!(ax, xs, stress, color = :blue, linewidth = 2)
-fig
 
 # xs = [node.x for node in nodes]
 # ys = [node.y for node in nodes]
 # ds = [node.d for node in nodes]
 # fig = Figure()
 # ax = Axis(fig[1, 1], xlabel = "x", ylabel = "t")
-# scatter!(ax, ys, ds, color = d, markersize = 10)
+# scatter!(ax, xs, ys, color = d, markersize = 10)
 # fig
-
-# save("./fig/碰撞/位移图/Tri6均布/t=20.png",fig)
-
-
-    
-
-
-
 
 # fig = Figure()
 # ax1 = Axis3(fig[1,1])
@@ -112,11 +110,13 @@ fig
 # ys = zeros(nₚ)
 # zs = zeros(nₚ)
 # ds = zeros(nₚ)
+# # σs = zeros(nₚ)
 # δds = zeros(nₚ)
 # for (i,node) in enumerate(nodes)
 #     xs[i] = node.x
 #     ys[i] = node.y
 #     ds[i] = node.d
+#     # σs[i] = node.σ
 # end
 # face = zeros(nₑ,6)
 # for (i,elm) in enumerate(elements["Ω"])
@@ -124,4 +124,5 @@ fig
 # end
 
 # meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
+# # meshscatter!(ax1,xs,ys,σs,color=ds,markersize = 0.06)
 # fig
