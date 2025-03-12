@@ -47,7 +47,7 @@ xlims!(ax, 0, 8)
 
 fig
 
-save("./fig/一维/Explicit_1d.png",fig)
+# save("./fig/一维/Explicit_1d.png",fig)
 # save("./fig/一维/Explicit_1d_e.png",fig)
 
 

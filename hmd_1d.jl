@@ -1,21 +1,22 @@
 using  ApproxOperator, CairoMakie
-import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫q̇mpqkpdx
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫∫q̇mṗqkpdxdt
 
 # model = Model(Ipopt.Optimizer)
 
 include("import_hmd.jl")
 
 ndiv= 160
-elements,nodes = import_hmd_bar("./msh/bar_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
+nₑ = length(elements["Ω"])
 
 set𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γᵍ"])
 
-kᶜ = 100.0
+kᶜ = 1e2
 m = 1.0
-q̇₀ = 1.0
+q̇₀ = 5.0
 q₀ = 1.0
 prescribe!(elements["Ω"],:m=>(x,y,z)->m)
 prescribe!(elements["Ω"],:kᶜ=>(x,y,z)->kᶜ)
@@ -31,7 +32,7 @@ Axis(fig[1, 1])
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
 
-𝑎 = ∫q̇mpqkpdx=>elements["Ω"]
+𝑎 = ∫∫q̇mṗqkpdxdt=>elements["Ω"]
 
 𝑎(k)
 
@@ -39,15 +40,16 @@ f = zeros(nₚ)
 f[1] -= 𝑃₀
 
 α = 1e12
-kα = zeros(nₚ,nₚ)
-fα = zeros(nₚ)
-kα[1,1] += α
-fα[1] += α*q₀
-kβ = zeros(nₚ,nₚ)
-kβ[nₚ,nₚ] += α
+kᵅ = zeros(nₚ,nₚ)
+fᵅ = zeros(nₚ)
+kᵅ[1,1] += α
+fᵅ[1] += α*q₀
+kᵝ = zeros(nₚ,nₚ)
+fᵝ = zeros(nₚ)
+# kᵝ[1,1] += α
+kᵝ[nₚ,nₚ] += α
 
-d = [k+kα -k;-k kβ]\[fα;f]
-δd = d[nₚ+1:end]
+d = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 d = d[1:nₚ]
 
 

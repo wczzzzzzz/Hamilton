@@ -10,7 +10,7 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 16
+ndiv= 20
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Non-uniform_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
 elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
