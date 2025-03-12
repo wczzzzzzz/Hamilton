@@ -55,7 +55,6 @@ kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
-σ = zeros(nₚ)
 
 𝑎(k)
 𝑓(f)
@@ -71,26 +70,30 @@ ys = [node.y for node in nodes]'
 zs = [node.z for node in nodes]'
 points = [xs; ys; zs]
 
-# cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
+cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
 
 # vtk_grid("./vtk/碰撞_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
 #     vtk["碰撞"] = d
 # end
 
-fill!(u,0.0)
-fill!(σ,0.0)
+σ = zeros(nₑ)
 for (j,p) in enumerate(elements["Ω"])
-    ξ, = p.𝓖
-    N = ξ[:𝝭]
-    B₁ = ξ[:∂𝝭∂x]
-    ε = 0.0
-    for (i,xᵢ) in enumerate(p.𝓒)
-        u[j] += N[i]*xᵢ.d
-        ε += B₁[i]*xᵢ.d
+    σ_ = 0.0
+    𝑤_ = 0.0
+    for ξ in p.𝓖
+        B₁ = ξ[:∂𝝭∂x]
+        ε = 0.0
+        𝑤 = ξ.𝑤
+        for (i,xᵢ) in enumerate(p.𝓒)
+            ε += B₁[i]*xᵢ.d
+        end
+        σ_ += EA*ε*𝑤
+        𝑤_ += 𝑤
     end
-    σ[j] = EA*ε
+    σ[j] = σ_/𝑤_
 end
 vtk_grid("./vtk/应力_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+    vtk["位移"] = d
     vtk["应力"] = σ
 end
 
