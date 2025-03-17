@@ -3,10 +3,11 @@ using ApproxOperator, GLMakie
 
 import Gmsh: gmsh
 
-ndiv = 111
+ndiv = 20
 gmsh.initialize()
-gmsh.open("./msh/test_x=20/"*string(ndiv)*".msh")
-# gmsh.open("./msh/square_"*string(ndiv)*".msh")
+# gmsh.open("./msh/test_x=20/"*string(ndiv)*".msh")
+# gmsh.open("./msh/square/"*string(ndiv)*".msh")
+gmsh.open("./msh/b=2/"*string(ndiv)*".msh")
 # gmsh.open("./msh/MorleysAcuteSkewPlate_"*string(ndiv)*".msh")
 # gmsh.open("./msh/SquarePlate_"*string(ndiv)*".msh")
 entities = getPhysicalGroups()
@@ -29,7 +30,7 @@ elements["∂Ω"] = elements["Γ¹"]∪elements["Γ²"]∪elements["Γ³"]∪ele
 f = Figure()
 
 # axis
-ax = Axis3(f[1, 1], perspectiveness = 0.8, aspect = :data, azimuth = -0.5*pi, elevation = 0.5*pi, xlabel = " ", ylabel = " ", zlabel = " ", xticksvisible = false,xticklabelsvisible=false, yticksvisible = false, yticklabelsvisible=false, zticksvisible = false, zticklabelsvisible=false, protrusions = (0.,0.,0.,0.))
+ax = Axis3(f[1, 1], perspectiveness = 0.0, aspect = :data, azimuth = -0.5*pi, elevation = 0.5*pi, xlabel = " ", ylabel = " ", zlabel = " ", xticksvisible = false,xticklabelsvisible=false, yticksvisible = false, yticklabelsvisible=false, zticksvisible = false, zticklabelsvisible=false, protrusions = (0.,0.,0.,0.))
 hidespines!(ax)
 hidedecorations!(ax)
 
@@ -43,14 +44,14 @@ scatter!(ps,
     color = :black
 )
 
-# elements
+elements
 for elm in elements["Ω"]
-    # x = [x.x for x in elm.𝓒[[1,2,3,1]]]
-    # y = [x.y for x in elm.𝓒[[1,2,3,1]]]
-    x = [x.x for x in elm.𝓒[[1,2,3,4]]]
-    y = [x.y for x in elm.𝓒[[1,2,3,4]]]
+    x = [x.x for x in elm.𝓒[[1,2,3,1]]]
+    y = [x.y for x in elm.𝓒[[1,2,3,1]]]
+    # x = [x.x for x in elm.𝓒[[1,2,3,4]]]
+    # y = [x.y for x in elm.𝓒[[1,2,3,4]]]
 
-    lines!(x,y,linestyle = :dash, linewidth = 0.5, color = :black)
+    lines!(x,y,linestyle = :dash, linewidth = 0.2, color = :black)
 end
 
 # # boundaries
@@ -59,11 +60,11 @@ for elm in elements["∂Ω"]
     ξ² = [x.y for x in elm.𝓒]
     x =  [x.x for x in elm.𝓒]
     y =  [x.y for x in elm.𝓒]
-    lines!(x,y,linewidth = 0.5, color = :black)
+    lines!(x,y,linewidth = 0.2, color = :black)
 end
 
 # save("./fig/square_"*string(ndiv)*".png",f)
-save("./fig/三角形节点网格/t="*string(ndiv)*".png",f)
+# save("./fig/三角形节点网格/Tri3_b=2_"*string(ndiv)*".png",f)
 
 
 f

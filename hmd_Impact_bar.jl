@@ -12,8 +12,9 @@ using WriteVTK
 include("import_hmd.jl")
 
 ndiv= 20
-elements,nodes = import_hmd_Tri6("./msh/square/"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/square/"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/b=2/"*string(ndiv)*".msh")
+
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
@@ -69,12 +70,7 @@ xs = [node.x for node in nodes]'
 ys = [node.y for node in nodes]'
 zs = [node.z for node in nodes]'
 points = [xs; ys; zs]
-
 cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
-
-# vtk_grid("./vtk/碰撞_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
-#     vtk["碰撞"] = d
-# end
 
 σ = zeros(nₑ)
 for (j,p) in enumerate(elements["Ω"])
@@ -92,40 +88,8 @@ for (j,p) in enumerate(elements["Ω"])
     end
     σ[j] = σ_/𝑤_
 end
-vtk_grid("./vtk/应力_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+vtk_grid("./vtk/Tri3_Impact_bar_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
     vtk["位移"] = d
     vtk["应力"] = σ
 end
 
-
-# xs = [node.x for node in nodes]
-# ys = [node.y for node in nodes]
-# ds = [node.d for node in nodes]
-# fig = Figure()
-# ax = Axis(fig[1, 1], xlabel = "x", ylabel = "t")
-# scatter!(ax, xs, ys, color = d, markersize = 10)
-# fig
-
-# fig = Figure()
-# ax1 = Axis3(fig[1,1])
-
-# xs = zeros(nₚ)
-# ys = zeros(nₚ)
-# zs = zeros(nₚ)
-# ds = zeros(nₚ)
-# # σs = zeros(nₚ)
-# δds = zeros(nₚ)
-# for (i,node) in enumerate(nodes)
-#     xs[i] = node.x
-#     ys[i] = node.y
-#     ds[i] = node.d
-#     # σs[i] = node.σ
-# end
-# face = zeros(nₑ,6)
-# for (i,elm) in enumerate(elements["Ω"])
-#     face[i,:] .= [x.𝐼 for x in elm.𝓒]
-# end
-
-# meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
-# # meshscatter!(ax1,xs,ys,σs,color=ds,markersize = 0.06)
-# fig
