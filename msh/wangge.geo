@@ -22,7 +22,7 @@ Plane Surface(1) = {1};
 Transfinite Curve{2,4} = m;
 Transfinite Curve{1,3} = n;
 
-Transfinite Surface{1};
+//Transfinite Surface{1};
 
 Physical Curve("Γ¹") = {1};
 Physical Curve("Γ²") = {2};
@@ -31,11 +31,10 @@ Physical Curve("Γ⁴") = {4};
 Physical Surface("Ω") = {1};
 
 Mesh.Algorithm = 9;
-
 Mesh.MshFileVersion = 2;
-//Mesh.SecondOrderIncomplete = 1;
-//SetOrder 2;
 
+Mesh.SecondOrderIncomplete = 1;
 Mesh 2;
 //RecombineMesh;
 
+SetOrder 2;

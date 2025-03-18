@@ -12,8 +12,10 @@ using WriteVTK
 include("import_hmd.jl")
 
 ndiv= 20
-# elements,nodes = import_hmd_Tri6("./msh/square/"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/b=2/"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri6("./msh/b=2/Tri6非均布"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/b=2/Tri3反向"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/b=2/Tri6"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/b=2/Tri6反向"*string(ndiv)*".msh")
 
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -88,8 +90,7 @@ for (j,p) in enumerate(elements["Ω"])
     end
     σ[j] = σ_/𝑤_
 end
-vtk_grid("./vtk/Tri3_Impact_bar_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+vtk_grid("./vtk/Tri6_非均布_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
     vtk["位移"] = d
     vtk["应力"] = σ
 end
-

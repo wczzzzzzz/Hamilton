@@ -18,7 +18,7 @@ Line(5) = {4, 5};
 Line(6) = {5, 1};
 Line(7) = {5, 6};
 
-Curve Loop(1) = {1, 2, 7, 6};
+Curve Loop(1) = {1, 2, -7, 6};
 Curve Loop(2) = {7, 3, 4, 5};
 
 Plane Surface(1) = {1};
@@ -27,15 +27,8 @@ Plane Surface(2) = {2};
 Transfinite Curve{1, 4, 7} = n;
 Transfinite Curve{2, 3, 5, 6} = m;
 
-Mesh.RecombineAll = 0; 
-Mesh.Algorithm = 9;
-Mesh.SecondOrderIncomplete = 1;
-
-Transfinite Surface{1} = {1, 2, 6, 5};
-Recombine Surface{1}; 
-
-Transfinite Surface{2} = {5, 6, 3, 4};
-Recombine Surface{2};
+Transfinite Surface{1}Right;
+Transfinite Surface{2};
 
 Physical Curve("Γ¹") = {1};
 Physical Curve("Γ²") = {2, 3};
@@ -43,5 +36,7 @@ Physical Curve("Γ³") = {4};
 Physical Curve("Γ⁴") = {5, 6};
 Physical Surface("Ω") = {1, 2};
 
+Mesh.Algorithm = 9;
+//Mesh.SecondOrderIncomplete = 1;
 Mesh 2;
-SetOrder 2;
+//SetOrder 2;
