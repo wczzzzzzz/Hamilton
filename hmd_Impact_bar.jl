@@ -11,10 +11,10 @@ using WriteVTK
 
 include("import_hmd.jl")
 
-ndiv= 20
-elements,nodes = import_hmd_Tri6("./msh/b=2/Tri6非均布"*string(ndiv)*".msh")
+ndiv= 111
+# elements,nodes = import_hmd_Tri6("./msh/b=2/Tri6非均布"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/b=2/Tri3反向"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri6("./msh/b=2/Tri6"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri6("./msh/b=2/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/b=2/Tri6反向"*string(ndiv)*".msh")
 
 nₚ = length(nodes)

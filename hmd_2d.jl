@@ -1,9 +1,9 @@
 using  ApproxOperator
 
-import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, stabilization_bar_LSG
-import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, stabilization_bar_LSG, fₕ
+import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
 
-using GLMakie
+using GLMakie, XLSX
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
@@ -11,16 +11,16 @@ using GLMakie
 include("import_hmd.jl")
 
 ndiv= 20
-# elements,nodes = import_hmd_Tri6("./msh/Non-uniform_Tri6/"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/test_x=20/"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/square/Tri6"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
-set∇²𝝭!(elements["Ω"])
+# set∇²𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
@@ -28,16 +28,17 @@ set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 set∇𝝭!(elements["Ωᵍ"])
 
-ρA = 1e0
+ρA = 1.0
 EA = 1.0
 α = 1e7
+c = (EA/ρA)^0.5
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
     if x < t - 1
         return 2/π
     elseif x > t
         return 0.0
-    # else
+    else
         return (1-cos(π*(t - x)))/π
     end
 end
@@ -52,14 +53,14 @@ prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 # prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
+# prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
+prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
-
-# 𝑎ᵞ = ∫∫∇v∇udxdy=>elements["Ω"][[146,82,59,175,165,71,134,147].-56]
 
 k = zeros(nₚ,nₚ)
 kˢ = zeros(nₚ,nₚ)
@@ -82,16 +83,16 @@ d = dt[1:nₚ]
 
 push!(nodes,:d=>d,:δd=>δd)
 
-# 𝐿₂ = log10(L₂(elements["Ωᵍ"]))
+# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
 #     y = nodes.y[i]
 #     d₁ = d[i]
 #     # Δ = d[i] - 𝑢(x,y)
-#         index = [20,40,80,100]
-#         XLSX.openxlsx("./excel/test_x=20.xlsx", mode="rw") do xf
-#         Sheet = xf[1]
+#         index = [10,20,40,80]
+#         XLSX.openxlsx("./excel/square.xlsx", mode="rw") do xf
+#         Sheet = xf[2]
 #         ind = findfirst(n->n==ndiv,index)+1
 #         # Sheet["A"*string(ind)] = x
 #         # Sheet["B"*string(ind)] = y
@@ -104,81 +105,10 @@ push!(nodes,:d=>d,:δd=>δd)
 
 # index = [10,20,40,80]
 # XLSX.openxlsx("./excel/square.xlsx", mode="rw") do xf
-#     Sheet = xf[1]
+#     Sheet = xf[2]
 #     ind = findfirst(n->n==ndiv,index)+1
-#     Sheet["A"*string(ind)] = 𝐿₂
+#     Sheet["A"*string(ind)] = 𝐻₁
 #     Sheet["B"*string(ind)] = log10(4/ndiv)
-# end
-
-# push!(nodes,:d=>d₁)
-# for (i,a) in enumerate(elements["Ω"])
-#     node1 = a.𝓒[1]
-#     node2 = a.𝓒[2]
-#     node3 = a.𝓒[3]
-#     x1 = node1.x
-#     x2 = node2.x
-#     x3 = node3.x
-#     y1 = node1.y
-#     y2 = node2.y
-#     y3 = node3.y
-#     d1 = node1.d
-#     d2 = node2.d
-#     d3 = node3.d
-#     Δ1 = d1 - 𝑢(x1,y1)
-#     Δ2 = d2 - 𝑢(x2,y2)
-#     Δ3 = d3 - 𝑢(x3,y3)
-#     XLSX.openxlsx("./excel/hmd_2d_n=10.xlsx", mode="rw") do xf
-#         Sheet = xf[1]
-#         ind = findfirst(n->n==ndiv,11)+6*(i-1)
-#         Sheet["A"*string(ind+1)] = x1
-#         Sheet["B"*string(ind+1)] = y1
-#         Sheet["C"*string(ind+1)] = d1
-#         Sheet["D"*string(ind+1)] = Δ1
-
-#         Sheet["A"*string(ind+2)] = x2
-#         Sheet["B"*string(ind+2)] = y2
-#         Sheet["C"*string(ind+2)] = d2
-#         Sheet["D"*string(ind+2)] = Δ2
-
-#         Sheet["A"*string(ind+3)] = x3
-#         Sheet["B"*string(ind+3)] = y3
-#         Sheet["C"*string(ind+3)] = d3
-#         Sheet["D"*string(ind+3)] = Δ3
-
-#         Sheet["A"*string(ind+4)] = 0.5*(x1+x2)
-#         Sheet["B"*string(ind+4)] = 0.5*(y1+y2)
-#         Sheet["C"*string(ind+4)] = 0.5*(d1+d2)
-#         Sheet["D"*string(ind+4)] = 0.5*(Δ1+Δ2)
-
-#         Sheet["A"*string(ind+5)] = 0.5*(x2+x3)
-#         Sheet["B"*string(ind+5)] = 0.5*(y2+y3)
-#         Sheet["C"*string(ind+5)] = 0.5*(d2+d3)
-#         Sheet["D"*string(ind+5)] = 0.5*(Δ2+Δ3)
-
-#         Sheet["A"*string(ind+6)] = 0.5*(x3+x1)
-#         Sheet["B"*string(ind+6)] = 0.5*(y3+y1)
-#         Sheet["C"*string(ind+6)] = 0.5*(d3+d1)
-#         Sheet["D"*string(ind+6)] = 0.5*(Δ3+Δ1)
-#     end
-# end
-
-# push!(nodes,:d=>d)
-# fig = Figure()
-# Axis(fig[1, 1])
-# xs = [node.x for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
-# ys = [node.d for node in nodes[[36,45,54,63,72,81,90,99,108,117,18]]]
-# lines!(xs,ys, color = :blue)
-
-# fig
-
-# ind = 121
-# xs = 0.0:4.0/(ind-1):4.0
-# ys = 0.0:4.0/(ind-1):4.0
-# zs = zeros(ind,ind)
-# for (i,x) in enumerate(xs)
-#     for (j,y) in enumerate(ys)
-#         zs[i,j] = 𝑢(x,y)
-#     end
 # end
 
 fig = Figure()
@@ -196,16 +126,16 @@ for (i,node) in enumerate(nodes)
     ds[i] = node.d
     # δds[i] = node.δd
 end
-face = zeros(nₑ,6)
+face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
 
-# mesh!(ax,xs,ys,face,color=zs)
+# mesh!(ax,xs,ys,zs,face,color=ds)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
-fig
+# fig
 
 # save("./fig/hmd_2d/test_x=20/t=98.png",fig)
 # save("./fig/hmd_2d/四边形节点/t=100.png",fig)
@@ -214,5 +144,28 @@ fig
 # save("./fig/hmd_2d/锁三边x=20/Tri6/非均布/t=15.png",fig)
 # save("./fig/hmd_2d/Tri6/均布/t=25.png",fig)
 
+# points = zeros(3,nₚ)
+# for (i,node) in enumerate(nodes)
+#     points[1,i] = node.x
+#     points[2,i] = node.y
+#     points[3,i] = node.d*4
+# end
+# cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
+# vtk_grid("./vtk/transient/Tri3非均布_"*string(ndiv)*".vtu",points,cells) do vtk
+#     vtk["d"] = [node.d for node in nodes]
+# end
 
-    
+# xs = [node.x for node in nodes]'
+# ys = [node.y for node in nodes]'
+# zs = [node.z for node in nodes]'
+# points = [xs; ys; zs]
+# cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
+# vtk_grid("./vtk/untransient/Tri3位移_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+#     vtk["位移"] = d
+# end
+
+
+fₛ,f₁,f₂ = fₕ(elements["Ω"],nₚ)
+println(f₁)
+println(f₂)
+# println(fₛ)

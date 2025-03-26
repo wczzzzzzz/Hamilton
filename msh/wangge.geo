@@ -1,8 +1,8 @@
 
-a = 1.0;
-b = 2.0;
+a = 4.0;
+b = 4.0;
 n = 21;
-m = 41;
+m = 21;
 
 Point(1) = {0.0, 0.0, 0.0};
 Point(2) = {  a, 0.0, 0.0};
@@ -37,4 +37,4 @@ Mesh.SecondOrderIncomplete = 1;
 Mesh 2;
 //RecombineMesh;
 
-SetOrder 2;
+//SetOrder 2;
