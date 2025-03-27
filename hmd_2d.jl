@@ -1,9 +1,10 @@
 using  ApproxOperator
 
-import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, stabilization_bar_LSG, fₕ
+using WriteVTK
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, stabilization_bar_LSG, truncation_error
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
 
-using GLMakie, XLSX
+# using GLMakie, XLSX
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
@@ -13,8 +14,8 @@ include("import_hmd.jl")
 ndiv= 20
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/square/Tri6"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "nonuniform"
+# elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
@@ -111,29 +112,29 @@ push!(nodes,:d=>d,:δd=>δd)
 #     Sheet["B"*string(ind)] = log10(4/ndiv)
 # end
 
-fig = Figure()
-ax1 = Axis3(fig[1,1])
+# fig = Figure()
+# ax1 = Axis3(fig[1,1])
 # ax2 = Axis3(fig[1,2])
 
-xs = zeros(nₚ)
-ys = zeros(nₚ)
-ds = zeros(nₚ)
-δds = zeros(nₚ)
-for (i,node) in enumerate(nodes)
-    xs[i] = node.x
-    ys[i] = node.y
-    # zs[i] = 𝑢(xs,ys)
-    ds[i] = node.d
-    # δds[i] = node.δd
-end
-face = zeros(nₑ,3)
-for (i,elm) in enumerate(elements["Ω"])
-    face[i,:] .= [x.𝐼 for x in elm.𝓒]
-end
+# xs = zeros(nₚ)
+# ys = zeros(nₚ)
+# ds = zeros(nₚ)
+# δds = zeros(nₚ)
+# for (i,node) in enumerate(nodes)
+#     xs[i] = node.x
+#     ys[i] = node.y
+#     # zs[i] = 𝑢(xs,ys)
+#     ds[i] = node.d
+#     # δds[i] = node.δd
+# end
+# face = zeros(nₑ,3)
+# for (i,elm) in enumerate(elements["Ω"])
+#     face[i,:] .= [x.𝐼 for x in elm.𝓒]
+# end
 
 # mesh!(ax,xs,ys,zs,face,color=ds)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
-meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
+# meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
 # fig
 
@@ -165,7 +166,21 @@ meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # end
 
 
-fₛ,f₁,f₂ = fₕ(elements["Ω"],nₚ)
-println(f₁)
-println(f₂)
+fₓ,fₜ,fₓₓ,fₜₜ = truncation_error(elements["Ω"],nₚ)
+# println(fₓ)
+# println(fₜ)
 # println(fₛ)
+
+xs = [node.x for node in nodes]'
+ys = [node.y for node in nodes]'
+zs = [node.z for node in nodes]'
+points = [xs; ys; zs]
+cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
+vtk_grid("./vtk/stability_tri3_"*uniform*"_"*string(ndiv), points, cells) do vtk
+    vtk["fₓ"] = fₓ
+    vtk["fₜ"] = fₜ
+    vtk["fₓₓ"] = fₓₓ
+    vtk["fₜₜ"] = fₜₜ
+    vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
+end
+
