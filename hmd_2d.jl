@@ -12,9 +12,9 @@ import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udx
 include("import_hmd.jl")
 
 ndiv= 20
-# elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/square/Tri6"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "nonuniform"
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform/算法4/1.5_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
@@ -29,7 +29,7 @@ set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 set∇𝝭!(elements["Ωᵍ"])
 
-ρA = 1.0
+ρA = 1.0*225.0/100.0
 EA = 1.0
 α = 1e7
 c = (EA/ρA)^0.5
@@ -152,7 +152,7 @@ push!(nodes,:d=>d,:δd=>δd)
 #     points[3,i] = node.d*4
 # end
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/transient/Tri3非均布_"*string(ndiv)*".vtu",points,cells) do vtk
+# vtk_grid("./vtk/uniform/Tri3非均布_"*string(ndiv)*".vtu",points,cells) do vtk
 #     vtk["d"] = [node.d for node in nodes]
 # end
 
@@ -161,7 +161,7 @@ push!(nodes,:d=>d,:δd=>δd)
 # zs = [node.z for node in nodes]'
 # points = [xs; ys; zs]
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/untransient/Tri3位移_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+# vtk_grid("./vtk/nonuniform/Tri3位移_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
 #     vtk["位移"] = d
 # end
 
@@ -172,15 +172,16 @@ fₓ,fₜ,fₓₓ,fₜₜ = truncation_error(elements["Ω"],nₚ)
 # println(fₛ)
 
 xs = [node.x for node in nodes]'
-ys = [node.y for node in nodes]'
+ys = [node.y*10/15 for node in nodes]'
 zs = [node.z for node in nodes]'
 points = [xs; ys; zs]
 cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
-vtk_grid("./vtk/stability_tri3_"*uniform*"_"*string(ndiv), points, cells) do vtk
+vtk_grid("./vtk/ceshi/1.5_"*uniform*"_"*string(ndiv), points, cells) do vtk
     vtk["fₓ"] = fₓ
     vtk["fₜ"] = fₜ
     vtk["fₓₓ"] = fₓₓ
     vtk["fₜₜ"] = fₜₜ
     vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
+    vtk["位移"] = d
 end
 
