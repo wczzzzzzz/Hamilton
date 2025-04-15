@@ -1,7 +1,7 @@
 
 a = 4.0;
-b = 6.0;
-c = 0.2;
+b = 4.0;
+c = 0.5;
 //n = 21;
 //m = 41;
 
@@ -39,3 +39,4 @@ Mesh 2;
 //RecombineMesh;
 
 //SetOrder 2;
+//RefineMesh;
