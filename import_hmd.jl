@@ -225,11 +225,11 @@ function import_hmd_mix(filename1::String,filename2::String,n::Int)
     push!(elements["Γ₃ₚ"], :𝗠=>𝗠)
     push!(elements["Γ₄ₚ"], :𝗠=>𝗠)
 
-    type = PiecewiseParametric{:Bubble,:Tri3}
+    # type = PiecewiseParametric{:Bubble,:Tri3}
     # type = PiecewiseParametric{:Bubble,:Quad}
-    elements["Ωᵇ"] = getPiecewiseElements(entities["Ω"], type, integrationorder)
-    push!(elements["Ωᵇ"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
+    # elements["Ωᵇ"] = getPiecewiseElements(entities["Ω"], type, integrationorder)
+    # push!(elements["Ωᵇ"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
 
-    gmsh.finalize()
+    # gmsh.finalize()
     return elements, nodes, nodes_s
 end

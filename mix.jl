@@ -1,131 +1,159 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX
 
-using GLMakie
+using  ApproxOperator
+
+using WriteVTK
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫pudΩ, ∫uudΩ, ∫ppdΩ, stabilization_bar_LSG, truncation_error
+import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
+
+using GLMakie, XLSX
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
 
-model = Model(Ipopt.Optimizer)
+include("import_hmd.jl")
 
-include("import_hmd_test.jl")
-
-ndiv= 10
-ndivs= 8
-elements,nodes,nodes_s = import_hmd_mix("./msh/Non-uniform_"*string(ndiv)*".msh","./msh/Non-uniform_"*string(ndivs)*".msh")
+ndiv= 20
+ndivs= 16
+elements,nodes,nodes_s = import_hmd_mix("./msh/square/square_"*string(ndiv)*".msh","./msh/square/square_"*string(ndivs)*".msh",ndivs)
 nₚ = length(nodes)
 nₜ = length(nodes_s)
+nₑ = length(elements["Ω"])
 
-set𝝭!(elements["Ω"])
+# set∇²𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
-set𝝭!(elements["Ωˢ"])
-set∇𝝭!(elements["Ωˢ"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
-set𝝭!(elements["Γ₅"])
-set𝝭!(elements["Γ₇"])
-set𝝭!(elements["Γ₈"])
+# set∇𝝭!(elements["Ωᵍ"])
+set∇𝝭!(elements["Ωₚ"])
+set𝝭!(elements["Γ₁ₚ"])
+set𝝭!(elements["Γ₂ₚ"])
+set𝝭!(elements["Γ₃ₚ"])
+set𝝭!(elements["Γ₄ₚ"])
 
-α = 1e13
-ρA = 1
-EA = 1
+# ρA = 1.0*25.0/100.0
+ρA = 1.0
+EA = 1.0
+α = 1e7
+c = (EA/ρA)^0.5
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
-prescribe!(elements["Γ₁"],:𝑃=>(x,y,z)->0.0)
-prescribe!(elements["Γ₅"],:𝑃=>(x,y,z)->0.0)
+function 𝑢(x,t)
+    if x < t - 1
+        return 2/π
+    elseif x > t
+        return 0.0
+    else
+        return (1-cos(π*(t - x)))/π
+    end
+end
+function P(x,t)
+    if x < t - 1
+        return 0.0
+    elseif x > t
+        return 0.0
+    else
+        return ρA*sin(π*(t - x))
+    end
+end
+prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
+prescribe!(elements["Ωₚ"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₇"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₈"],:t=>(x,y,z)->𝑇(y))
-prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γ₄"],:g=>(x,y,z)->𝑢(x,y))
+prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
+# prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
+prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
+prescribe!(elements["Γ₃"],:t=>(x,y,z)->P(x,y))
+# prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
+prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
-kₛ = zeros(nₚ,nₜ)
+𝑎ₚᵤ = ∫pudΩ=>(elements["Ωₚ"],elements["Ω"])
+𝑎ₚₚ = ∫ppdΩ=>elements["Ωₚ"]
+𝑎ᵤᵤ = ∫uudΩ=>elements["Ω"]
+𝑓₁ = ∫vtdΓ=>elements["Γ₃"]
+# 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
+𝑓 = ∫vtdΓ=>elements["Γ₄"]
+𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
+# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+# 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+
+kₚᵤ = zeros(nₜ,nₚ)
+kₚₚ = zeros(nₜ,nₜ)
+kᵤᵤ = zeros(nₚ,nₚ)
 k = zeros(nₚ,nₚ)
+kˢ = zeros(nₚ,nₚ)
+f = zeros(nₚ)
 f₁ = zeros(nₚ)
-f₂ = zeros(nₜ)
 kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₜ,nₜ)
 fᵝ = zeros(nₜ)
 
-# k = zeros(nₚ,nₚ)
-# f = zeros(nₚ)
-# kᵅ = zeros(nₚ,nₚ)
-# fᵅ = zeros(nₚ)
-# kᵝ = zeros(nₚ,nₚ)
-# fᵝ = zeros(nₚ)
+𝑎ₚᵤ(kₚᵤ)
+𝑎ₚₚ(kₚₚ)
+𝑎ᵤᵤ(kᵤᵤ)
+
+# 𝑎(k)
+𝑓(f)
+𝑓₁(f₁)
+𝑎ᵅ(kᵅ,fᵅ)
+prescribe!(elements["Γ₁ₚ"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₂ₚ"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₃ₚ"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₄ₚ"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₁ₚ"],:g=>(x,y,z)->P(x,y))
+prescribe!(elements["Γ₂ₚ"],:g=>(x,y,z)->P(x,y))
+prescribe!(elements["Γ₃ₚ"],:g=>(x,y,z)->P(x,y))
+prescribe!(elements["Γ₄ₚ"],:g=>(x,y,z)->P(x,y))
+𝑎ᵝ = ∫vgdΓ=>elements["Γ₁ₚ"]∪elements["Γ₂ₚ"]∪elements["Γ₃ₚ"]∪elements["Γ₄ₚ"]
+
+𝑎ᵝ(kᵝ,fᵝ)
+
+dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ+kᵝ]\[fᵅ;fᵝ]
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# dt =(k+kᵅ)\(f+fᵅ)
+# dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
+d = dt[1:nₚ]
+δd = dt[nₚ+1:end]
+
+push!(nodes,:d=>d,:δd=>δd)
 
 
-ops = [
-       Operator{:∫∫q̇mpqkpdx}(:ρA=>ρA,:EA=>EA),
-       Operator{:∫∫q̇mΨqkΨdx}(:ρA=>ρA,:EA=>EA),
-       Operator{:∫𝑃δudx}(),
-       Operator{:∫vtdΓ}(),
-       Operator{:∫vgdΓ}(:α=>α),
-       Operator{:L₂}(),
-]
+fig = Figure()
+ax1 = Axis3(fig[1,1])
+# ax2 = Axis3(fig[1,2])
 
-
-
-ops[1](elements["Ω"],k)
-ops[2](elements["Ω"],elements["Ωˢ"],kₛ)
-ops[3](elements["Γ₁"],f₁)
-ops[4](elements["Γ₄"],f₁)
-ops[3](elements["Γ₅"],f₂)
-ops[4](elements["Γ₈"],f₂)
-ops[5](elements["Γ₁"],kᵅ,fᵅ)
-ops[5](elements["Γ₂"],kᵅ,fᵅ)
-ops[5](elements["Γ₇"],kᵝ,fᵝ)
-
-
-# ops[2](elements["Γ₁"],f)
-# ops[3](elements["Γ₄"],f)
-# ops[4](elements["Γ₁"],kᵅ,fᵅ)
-# ops[4](elements["Γ₂"],kᵅ,fᵅ)
-# ops[4](elements["Γ₃"],kᵝ,fᵝ)
-
-# d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
-d = [k+kᵅ kₛ;kₛ' kᵝ]\[f₁+fᵅ;f₂+fᵝ]
-d₁ = d[1:nₚ]
-# d₁ = d[nₚ+1:2nₚ]
-# push!(nodes,:d=>d₁)
-
-
-α = (EA/ρA)^0.5
-function 𝑢(x,t)
-    if x < α*(t-1)
-        return 2*α/π
-    elseif α*t < x
-        return 0.0
-    else
-        α/π*(1-cos(π*(t-x/α)))
-    end
+xs = zeros(nₚ)
+ys = zeros(nₚ)
+ds = zeros(nₚ)
+δds = zeros(nₚ)
+for (i,node) in enumerate(nodes)
+    xs[i] = node.x
+    ys[i] = node.y
+    # zs[i] = 𝑢(xs,ys)
+    ds[i] = node.d
+    # δds[i] = node.δd
+end
+face = zeros(nₑ,3)
+for (i,elm) in enumerate(elements["Ω"])
+    face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
 
-# set𝝭!(elements["Ωᵍ"])
-# set∇𝝭!(elements["Ωᵍ"])
-# prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
-# L₂ = ops[6](elements["Ωᵍ"])
+# mesh!(ax,xs,ys,zs,face,color=ds)
+# meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
+meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
+# meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
+fig
 
-# for i in 1:nₚ
-#     x = nodes.x[i]
-#     y = nodes.y[i]
-#     d₁ = d[i]
-#     Δ = d[i] - 𝑢(x,y)
-#         index = 8
-#         XLSX.openxlsx("./excel/mix_formulation.xlsx", mode="rw") do xf
-#         Sheet = xf[1]
-#         ind = findfirst(n->n==ndivs,index)+i
-#         Sheet["A"*string(ind)] = x
-#         Sheet["B"*string(ind)] = y
-#         Sheet["C"*string(ind)] = d₁
-#         Sheet["D"*string(ind)] = Δ
-#         # Sheet["E"*string(ind)] = log10(L₂)
-#         # Sheet["F"*string(ind)] = log10(4/ndiv)
-#     end
-# end
-
-
-
-    
+# save("./fig/hmd_2d/test_x=20/t=98.png",fig)
+# save("./fig/hmd_2d/四边形节点/t=100.png",fig)
+# save("./fig/hmd_2d/锁三边x=20/Tri3/三维图/t=25.png",fig)
+# save("./fig/hmd_2d/锁三边x=20/Tri6/均布/t=25.png",fig)
+# save("./fig/hmd_2d/锁三边x=20/Tri6/非均布/t=15.png",fig)
+# save("./fig/hmd_2d/Tri6/均布/t=25.png",fig)

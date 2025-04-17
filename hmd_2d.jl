@@ -46,15 +46,15 @@ function 𝑢(x,t)
         return (1-cos(π*(t - x)))/π
     end
 end
-# function P(x,t)
-#     if x < t - 1
-#         return 0.0
-#     elseif x > t
-#         return 0.0
-#     else
-#         return sin(π*(t - x))
-#     end
-# end
+function P(x,t)
+    if x < t - 1
+        return 0.0
+    elseif x > t
+        return 0.0
+    else
+        return ρA*sin(π*(t - x))
+    end
+end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
@@ -63,12 +63,12 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
-# prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 # prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
-prescribe!(elements["Γ₃"],:t=>(x,y,z)->0.0)
+prescribe!(elements["Γ₃"],:t=>(x,y,z)->P(x,y))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
@@ -76,12 +76,11 @@ prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 𝑎ₚₚ = ∫ppdΩ=>elements["Ω"]
 𝑎ᵤᵤ = ∫uudΩ=>elements["Ω"]
 𝑓₁ = ∫vtdΓ=>elements["Γ₃"]
-# 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
+𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 # 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
-
 
 kₚᵤ = zeros(nₚ,nₚ)
 kₚₚ = zeros(nₚ,nₚ)
@@ -99,13 +98,21 @@ fᵝ = zeros(nₚ)
 𝑎ₚₚ(kₚₚ)
 𝑎ᵤᵤ(kᵤᵤ)
 
-# 𝑎(k)
+𝑎(k)
 𝑓(f)
 𝑓₁(f₁)
 𝑎ᵅ(kᵅ,fᵅ)
-# 𝑎ᵝ(kᵝ,fᵝ)
 
-dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ]\[fᵅ;zeros(nₚ)]
+prescribe!(elements["Γ₁"],:g=>(x,y,z)->P(x,y))
+prescribe!(elements["Γ₂"],:g=>(x,y,z)->P(x,y))
+prescribe!(elements["Γ₃"],:g=>(x,y,z)->P(x,y))
+prescribe!(elements["Γ₄"],:g=>(x,y,z)->P(x,y))
+𝑎ᵝ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
+
+𝑎ᵝ(kᵝ,fᵝ)
+
+dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ+kᵝ]\[fᵅ;fᵝ]
+# dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ]\[fᵅ+f+f₁;zeros(nₚ)]
 # dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
