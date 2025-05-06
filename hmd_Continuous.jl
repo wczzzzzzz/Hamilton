@@ -1,4 +1,4 @@
-using  ApproxOperator, JuMP, Ipopt, CairoMakie, XLSX, LinearAlgebra
+using  ApproxOperator, JuMP, Ipopt, XLSX, LinearAlgebra
 import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
 
@@ -8,14 +8,14 @@ using GLMakie
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 20
-# elements,nodes = import_hmd_Tri3("./msh/square_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri6("./msh/tri6_x=20/"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri6("./msh/Non-uniform_Tri6/"*string(ndiv)*".msh")
+ndiv= 0.3
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/2.5_"*string(ndiv)*".msh");uniform = "nonuniform"
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
-set∇²𝝭!(elements["Ω"])
+# set∇²𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
@@ -25,7 +25,9 @@ set𝝭!(elements["Γ₄"])
 α = 1e10
 ρA = 1e0
 EA = 1.0
+a = 1.0
 l = 4.0
+c = (EA/ρA)^0.5
 φ(x) = sin(π*x/l)
 𝑢(x,t) = cos.(π.*a.*t/l).*sin.(π.*x/l)
 
@@ -42,6 +44,7 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:t=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->φ(x))
+prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
@@ -86,7 +89,7 @@ for (i,node) in enumerate(nodes)
     ds[i] = node.d
     # δds[i] = node.δd
 end
-face = zeros(nₑ,6)
+face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
@@ -100,4 +103,15 @@ fig
 # save("./fig/连续解/锁时间末端Tri_6非均布/t=19.png",fig)
 # save("./fig/连续解/锁时间末端Tri_6均布/t=25.png",fig)
 # save("./fig/连续解/mix_Tri_6均布/t=25.png",fig)
-# save("./fig/连续解/mix_Tri_6非均布/t=50.png",fig)
+# save("./fig/连续解/mix_Tri_6非均布/n=41.png",fig)
+
+# points = zeros(3,nₚ)
+# for (i,node) in enumerate(nodes)
+#     points[1,i] = node.x
+#     points[2,i] = node.y*10/25
+#     points[3,i] = node.d
+# end
+# cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
+# vtk_grid("./vtk/nonuniform/连续解/Tri3_"*string(ndiv)*".vtu",points,cells) do vtk
+#     vtk["d"] = [node.d for node in nodes]
+# end

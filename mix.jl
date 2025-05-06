@@ -13,7 +13,7 @@ using GLMakie, XLSX
 include("import_hmd.jl")
 
 ndiv= 20
-ndivs= 16
+ndivs= 15
 elements,nodes,nodes_s = import_hmd_mix("./msh/square/square_"*string(ndiv)*".msh","./msh/square/square_"*string(ndivs)*".msh",ndivs)
 nₚ = length(nodes)
 nₜ = length(nodes_s)
@@ -122,23 +122,31 @@ dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ+kᵝ]\[fᵅ;fᵝ]
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
 
-push!(nodes,:d=>d,:δd=>δd)
+push!(nodes,:d=>d)
+push!(nodes_s,:δd=>δd)
 
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
-# ax2 = Axis3(fig[1,2])
+ax2 = Axis3(fig[1,2])
 
 xs = zeros(nₚ)
 ys = zeros(nₚ)
+xs_s = zeros(nₜ)
+ys_s = zeros(nₜ)
 ds = zeros(nₚ)
-δds = zeros(nₚ)
+δds = zeros(nₜ)
 for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
     # zs[i] = 𝑢(xs,ys)
     ds[i] = node.d
-    # δds[i] = node.δd
+end
+for (i,node) in enumerate(nodes_s)
+    xs_s[i] = node.x
+    ys_s[i] = node.y
+    # zs[i] = 𝑢(xs,ys)
+    δds[i] = node.δd
 end
 face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
@@ -148,7 +156,7 @@ end
 # mesh!(ax,xs,ys,zs,face,color=ds)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
-# meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
+meshscatter!(ax2,xs_s,ys_s,δds,color=δds,markersize = 0.1)
 fig
 
 # save("./fig/hmd_2d/test_x=20/t=98.png",fig)

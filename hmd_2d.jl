@@ -11,10 +11,11 @@ using GLMakie, XLSX
 
 include("import_hmd.jl")
 
-ndiv= 20
+ndiv= 111
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform/局部加密/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_0.5/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/拉伸压缩/2.1_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
@@ -46,30 +47,30 @@ function 𝑢(x,t)
         return (1-cos(π*(t - x)))/π
     end
 end
-function P(x,t)
-    if x < t - 1
-        return 0.0
-    elseif x > t
-        return 0.0
-    else
-        return ρA*sin(π*(t - x))
-    end
-end
+# function P(x,t)
+#     if x < t - 1
+#         return 0.0
+#     elseif x > t
+#         return 0.0
+#     else
+#         return ρA*sin(π*(t - x))
+#     end
+# end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
-prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
+# prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:g=>(x,y,z)->𝑢(x,y))
-prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
+# prescribe!(elements["Γ₄"],:g=>(x,y,z)->𝑢(x,y))
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 # prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
-prescribe!(elements["Γ₃"],:t=>(x,y,z)->P(x,y))
-prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
+# prescribe!(elements["Γ₃"],:t=>(x,y,z)->P(x,y))
+# prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
 𝑎ₚᵤ = ∫pudΩ=>(elements["Ω"],elements["Ω"])
@@ -78,9 +79,9 @@ prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 𝑓₁ = ∫vtdΓ=>elements["Γ₃"]
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
-𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
-# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
-# 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+# 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
+𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
+𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
 
 kₚᵤ = zeros(nₚ,nₚ)
 kₚₚ = zeros(nₚ,nₚ)
@@ -100,20 +101,20 @@ fᵝ = zeros(nₚ)
 
 𝑎(k)
 𝑓(f)
-𝑓₁(f₁)
+# 𝑓₁(f₁)
 𝑎ᵅ(kᵅ,fᵅ)
 
-prescribe!(elements["Γ₁"],:g=>(x,y,z)->P(x,y))
-prescribe!(elements["Γ₂"],:g=>(x,y,z)->P(x,y))
-prescribe!(elements["Γ₃"],:g=>(x,y,z)->P(x,y))
-prescribe!(elements["Γ₄"],:g=>(x,y,z)->P(x,y))
-𝑎ᵝ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
+# prescribe!(elements["Γ₁"],:g=>(x,y,z)->P(x,y))
+# prescribe!(elements["Γ₂"],:g=>(x,y,z)->P(x,y))
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->P(x,y))
+# prescribe!(elements["Γ₄"],:g=>(x,y,z)->P(x,y))
+# 𝑎ᵝ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
 
 𝑎ᵝ(kᵝ,fᵝ)
 
-dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ+kᵝ]\[fᵅ;fᵝ]
+# dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ+kᵝ]\[fᵅ;fᵝ]
 # dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ]\[fᵅ+f+f₁;zeros(nₚ)]
-# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
 d = dt[1:nₚ]
@@ -182,8 +183,8 @@ fig
 # save("./fig/hmd_2d/四边形节点/t=100.png",fig)
 # save("./fig/hmd_2d/锁三边x=20/Tri3/三维图/t=25.png",fig)
 # save("./fig/hmd_2d/锁三边x=20/Tri6/均布/t=25.png",fig)
-# save("./fig/hmd_2d/锁三边x=20/Tri6/非均布/t=15.png",fig)
-# save("./fig/hmd_2d/Tri6/均布/t=25.png",fig)
+# save("./fig/hmd_2d/局部加密C=0.2/T6_c=0.05.png",fig)
+# save("./fig/hmd_2d/Tri3/非均布/c=0.1.png",fig)
 
 # points = zeros(3,nₚ)
 # for (i,node) in enumerate(nodes)
@@ -192,7 +193,7 @@ fig
 #     points[3,i] = node.d*4
 # end
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/uniform/Tri6非均布_"*string(ndiv)*".vtu",points,cells) do vtk
+# vtk_grid("./vtk/nonuniform/非连续解/Tri6_"*string(ndiv)*".vtu",points,cells) do vtk
 #     vtk["d"] = [node.d for node in nodes]
 # end
 
