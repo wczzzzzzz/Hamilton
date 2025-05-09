@@ -13,7 +13,7 @@ include("import_hmd.jl")
 # include("importmsh.jl")
 
 ndiv= 20
-elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
@@ -24,24 +24,15 @@ elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".ms
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
-# nₑ = length(elements["Ω"])
-nₑ = length(elements["Ωᵗ"])
-nₗ = length(nodes_t) - nₚ - nₑ
+nₑ = length(elements["Ω"])
 
-set𝝭!(elements["Ωᵗ"])
-set∇𝝭!(elements["Ωᵗ"])
-set𝝭!(elements["Γ₁ᵗ"])
-set𝝭!(elements["Γ₂ᵗ"])
-set𝝭!(elements["Γ₃ᵗ"])
-set𝝭!(elements["Γ₄ᵗ"])
-
-# # set∇²𝝭!(elements["Ω"])
-# set∇𝝭!(elements["Ω"])
-# set𝝭!(elements["Γ₁"])
-# set𝝭!(elements["Γ₂"])
-# set𝝭!(elements["Γ₃"])
-# set𝝭!(elements["Γ₄"])
-# # set∇𝝭!(elements["Ωᵍ"])
+# set∇²𝝭!(elements["Ω"])
+set∇𝝭!(elements["Ω"])
+set𝝭!(elements["Γ₁"])
+set𝝭!(elements["Γ₂"])
+set𝝭!(elements["Γ₃"])
+set𝝭!(elements["Γ₄"])
+set∇𝝭!(elements["Ωᵍ"])
 
 # ρA = 1.0*25.0/100.0
 ρA = 1.0
@@ -58,7 +49,15 @@ function 𝑢(x,t)
         return (1-cos(π*(t - x)))/π
     end
 end
-
+# function P(x,t)
+#     if x < t - 1
+#         return 0.0
+#     elseif x > t
+#         return 0.0
+#     else
+#         return ρA*sin(π*(t - x))
+#     end
+# end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
@@ -68,29 +67,55 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
+# prescribe!(elements["Γ₄"],:g=>(x,y,z)->𝑢(x,y))
 # prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
+# prescribe!(elements["Γ₃"],:𝑃=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
+# prescribe!(elements["Γ₃"],:t=>(x,y,z)->P(x,y))
+# prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
+# 𝑎ₚᵤ = ∫pudΩ=>(elements["Ω"],elements["Ω"])
+# 𝑎ₚₚ = ∫ppdΩ=>elements["Ω"]
+# 𝑎ᵤᵤ = ∫uudΩ=>elements["Ω"]
+# 𝑓₁ = ∫vtdΓ=>elements["Γ₃"]
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
 
+# kₚᵤ = zeros(nₚ,nₚ)
+# kₚₚ = zeros(nₚ,nₚ)
+# kᵤᵤ = zeros(nₚ,nₚ)
 k = zeros(nₚ,nₚ)
 kˢ = zeros(nₚ,nₚ)
 f = zeros(nₚ)
+# f₁ = zeros(nₚ)
 kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
 
+# 𝑎ₚᵤ(kₚᵤ)
+# 𝑎ₚₚ(kₚₚ)
+# 𝑎ᵤᵤ(kᵤᵤ)
+
 𝑎(k)
 𝑓(f)
+# 𝑓₁(f₁)
 𝑎ᵅ(kᵅ,fᵅ)
+
+# prescribe!(elements["Γ₁"],:g=>(x,y,z)->P(x,y))
+# prescribe!(elements["Γ₂"],:g=>(x,y,z)->P(x,y))
+# prescribe!(elements["Γ₃"],:g=>(x,y,z)->P(x,y))
+# prescribe!(elements["Γ₄"],:g=>(x,y,z)->P(x,y))
+# 𝑎ᵝ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
+
 𝑎ᵝ(kᵝ,fᵝ)
 
+# dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ+kᵝ]\[fᵅ;fᵝ]
+# dt = [kᵤᵤ+kᵅ kₚᵤ';kₚᵤ kₚₚ]\[fᵅ+f+f₁;zeros(nₚ)]
 dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]

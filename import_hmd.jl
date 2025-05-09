@@ -233,3 +233,38 @@ function import_hmd_mix(filename1::String,filename2::String,n::Int)
     # gmsh.finalize()
     return elements, nodes, nodes_s
 end
+
+function import_hermite(filename::String)
+    gmsh.initialize()
+    gmsh.open(filename)
+
+    integrationorder = 5
+    # integrationorder_Ωᵍ = 10
+    entities = getPhysicalGroups()
+    nodes = get𝑿ᵢ()
+    elements = Dict{String,Vector{ApproxOperator.AbstractElement}}()
+    elements["Ω"] = getElements(nodes, entities["Ω"], integrationorder)
+    elements["Ωᵗ"], nodes_t = Tri3toTriHermite(elements["Ω"], nodes)
+    # elements["Ωᵍ"] = getElements(nodes, entities["Ω"], integrationorder_Ωᵍ)
+    elements["Γ₁"] = getElements(nodes, entities["Γ¹"], integrationorder)
+    elements["Γ₂"] = getElements(nodes, entities["Γ²"], integrationorder)
+    elements["Γ₃"] = getElements(nodes, entities["Γ³"], integrationorder)
+    elements["Γ₄"] = getElements(nodes, entities["Γ⁴"], integrationorder)
+    # elements["Γ₁ᵗ"], nodes_t = Tri3toTriHermite(elements["Γ₁"], nodes)
+    # elements["Γ₂ᵗ"], nodes_t = Tri3toTriHermite(elements["Γ₂"], nodes)
+    # elements["Γ₃ᵗ"], nodes_t = Tri3toTriHermite(elements["Γ₃"], nodes)
+    # elements["Γ₄ᵗ"], nodes_t = Tri3toTriHermite(elements["Γ₄"], nodes)
+    push!(elements["Ωᵗ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    # push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    # push!(elements["Γ₁ᵗ"], :𝝭)
+    # push!(elements["Γ₂ᵗ"], :𝝭)
+    # push!(elements["Γ₃ᵗ"], :𝝭)
+    # push!(elements["Γ₄ᵗ"], :𝝭)
+    push!(elements["Γ₁"], :𝝭)
+    push!(elements["Γ₂"], :𝝭)
+    push!(elements["Γ₃"], :𝝭)
+    push!(elements["Γ₄"], :𝝭)
+    
+    # gmsh.finalize()
+    return elements, nodes, nodes_t
+end

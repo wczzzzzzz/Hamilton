@@ -90,7 +90,7 @@ for (j,p) in enumerate(elements["Ω"])
     end
     σ[j] = σ_/𝑤_
 end
-vtk_grid("./vtk/Tri6_非均布_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
-    vtk["位移"] = d
-    vtk["应力"] = σ
-end
+# vtk_grid("./vtk/Tri6_非均布_"*string(ndiv)*"_"*string(nₚ), points, cells) do vtk
+#     vtk["位移"] = d
+#     vtk["应力"] = σ
+# end
