@@ -16,14 +16,14 @@ set𝝭!(elements["Γ₃ᵗ"])
 set𝝭!(elements["Γ₄ᵗ"])
 
 # constant
-u(x,y,z) = 1.0
-∂u∂x(x,y,z) = 0.0
-∂u∂y(x,y,z) = 0.0
+# u(x,y,z) = 1.0
+# ∂u∂x(x,y,z) = 0.0
+# ∂u∂y(x,y,z) = 0.0
 
 # linear
-# u(x,y,z) = 1+2x+3y
-# ∂u∂x(x,y,z) = 2.0
-# ∂u∂y(x,y,z) = 3.0
+u(x,y,z) = 1+2x+3y
+∂u∂x(x,y,z) = 2.0
+∂u∂y(x,y,z) = 3.0
 
 # quadratic
 # u(x,y,z) = 1+2x+3y+4x^2+5x*y+6y^2
@@ -71,5 +71,6 @@ end
 push!(nodes_t,:d=>d)
 
 # err = cc𝝭(elements["Ωᵗ"])
-err = cc∇𝝭(elements["Ωᵗ"])
+err = cc𝝭(elements["Γ₁ᵗ"])
+# err = cc∇𝝭(elements["Ωᵗ"])
 # err = cc𝝭(elements["Ωᵗ"][1:1])
