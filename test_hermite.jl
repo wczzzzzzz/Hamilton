@@ -1,19 +1,24 @@
 
 using ApproxOperator
-import ApproxOperator.Test: cc𝝭
+import ApproxOperator.Test: cc𝝭, cc∇𝝭
 
 include("importmsh.jl")
 
-elements, nodes, nodes_t = import_hermite("tri.msh")
+elements, nodes, nodes_t, = import_hermite("trih.msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ωᵗ"])
 nₗ = length(nodes_t) - nₚ - nₑ
 set𝝭!(elements["Ωᵗ"])
+set∇𝝭!(elements["Ωᵗ"])
+set𝝭!(elements["Γ₁ᵗ"])
+set𝝭!(elements["Γ₂ᵗ"])
+set𝝭!(elements["Γ₃ᵗ"])
+set𝝭!(elements["Γ₄ᵗ"])
 
 # constant
-# u(x,y,z) = 1.0
-# ∂u∂x(x,y,z) = 0.0
-# ∂u∂y(x,y,z) = 0.0
+u(x,y,z) = 1.0
+∂u∂x(x,y,z) = 0.0
+∂u∂y(x,y,z) = 0.0
 
 # linear
 # u(x,y,z) = 1+2x+3y
@@ -26,13 +31,17 @@ set𝝭!(elements["Ωᵗ"])
 # ∂u∂y(x,y,z) = 3.0+12y+5x
 
 # cubic
-u(x,y,z) = 1+2x+3y+4x^2+5x*y+6y^2+7x^3+8x^2*y+9x*y^2+10y^3
-∂u∂x(x,y,z) = 2.0+8x+5y+21x^2+16x*y+9y^2
-∂u∂y(x,y,z) = 3.0+12y+5x+8x^2+18x*y+30y^2
+# u(x,y,z) = 1+2x+3y+4x^2+5x*y+6y^2+7x^3+8x^2*y+9x*y^2+10y^3
+# ∂u∂x(x,y,z) = 2.0+8x+5y+21x^2+16x*y+9y^2
+# ∂u∂y(x,y,z) = 3.0+12y+5x+8x^2+18x*y+30y^2
 
 prescribe!(elements["Ωᵗ"], :u=>u)
 prescribe!(elements["Ωᵗ"], :∂u∂x=>∂u∂x)
 prescribe!(elements["Ωᵗ"], :∂u∂y=>∂u∂y)
+prescribe!(elements["Γ₁ᵗ"],:u=>u)
+prescribe!(elements["Γ₂ᵗ"],:u=>u)
+prescribe!(elements["Γ₃ᵗ"],:u=>u)
+prescribe!(elements["Γ₄ᵗ"],:u=>u)
 
 # Consistency condition
 d = zeros(nₚ+nₗ+nₑ)
@@ -61,5 +70,6 @@ for i in 1:nₑ
 end
 push!(nodes_t,:d=>d)
 
-err = cc𝝭(elements["Ωᵗ"])
+# err = cc𝝭(elements["Ωᵗ"])
+err = cc∇𝝭(elements["Ωᵗ"])
 # err = cc𝝭(elements["Ωᵗ"][1:1])
