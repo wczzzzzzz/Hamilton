@@ -1,8 +1,8 @@
 
 a = 4.0;
 b = 4.0;
-c = 0.5;
-//n = 11;
+//c = 0.5;
+n = 31;
 //m = 16;
 
 Point(1) = {0.0, 0.0, 0.0, c};
@@ -19,7 +19,7 @@ Curve Loop(1) = {1,2,3,4};
 
 Plane Surface(1) = {1};
 
-//Transfinite Curve{1,2,3,4} = n;
+Transfinite Curve{1,2,3,4} = n;
 //Transfinite Curve{2,4} = m;
 //Transfinite Curve{1,3} = n;
 
