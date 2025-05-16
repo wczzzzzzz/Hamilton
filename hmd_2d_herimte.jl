@@ -5,6 +5,7 @@ import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫pudΩ, ∫uudΩ, ∫ppdΩ
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
 
 using GLMakie, XLSX
+using SparseArrays
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
@@ -12,10 +13,11 @@ using GLMakie, XLSX
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 20
-elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+ndiv= 0.1
+# elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
-# elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/局部加密/C=0.2/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/局部加密/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_0.5/"*string(ndiv)*".msh");uniform = "uniform"
 
@@ -49,6 +51,7 @@ end
 
 prescribe!(elements["Ωᵗ"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ωᵗ"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Ωᵗ"],:u=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₁ᵗ"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂ᵗ"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃ᵗ"],:α=>(x,y,z)->α)
@@ -66,13 +69,21 @@ prescribe!(elements["Γ₄ᵗ"],:t=>(x,y,z)->-𝑇(y))
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁ᵗ"]∪elements["Γ₂ᵗ"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃ᵗ"]
 
-k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-f = zeros(nₚ+nₗ+nₑ)
-kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵅ = zeros(nₚ+nₗ+nₑ)
-kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵝ = zeros(nₚ+nₗ+nₑ)
+# k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# f = zeros(nₚ+nₗ+nₑ)
+# kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵅ = zeros(nₚ+nₗ+nₑ)
+# kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵝ = zeros(nₚ+nₗ+nₑ)
+
+k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+f = zeros(nₚ + nₗ + nₑ)
+kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵅ = zeros(nₚ + nₗ + nₑ)
+kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵝ = zeros(nₚ + nₗ + nₑ)
 
 𝑎(k)
 𝑓(f)
@@ -82,12 +93,13 @@ fᵝ = zeros(nₚ+nₗ+nₑ)
 dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
-d = dt[1:nₚ]
+d = dt[1:nₚ + nₗ + nₑ]
 δd = dt[nₚ+1:end]
 
 push!(nodes,:d=>d,:δd=>δd)
+# push!(nodes_t,:d=>d,:δd=>δd)
 
-# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# 𝐿₂ = log10.(L₂(elements["Ωᵗ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -108,24 +120,24 @@ push!(nodes,:d=>d,:δd=>δd)
 # end
 
 # index = [10,20,40,80]
-# index = [0.4,0.3,0.2,0.1]
-# # index = [0,1,2,3,4]
-# XLSX.openxlsx("./excel/xinsuanzi.xlsx", mode="rw") do xf
-#     Sheet = xf[2]
+# index = [0.4,0.2,0.1,0.05]
+# # # index = [0,1,2,3,4]
+# XLSX.openxlsx("./excel/hermite.xlsx", mode="rw") do xf
+#     Sheet = xf[1]
 #     ind = findfirst(n->n==ndiv,index)+1
 #     Sheet["A"*string(ind)] = 𝐿₂
-#     # Sheet["B"*string(ind)] = log10(4/ndiv)
-#     Sheet["B"*string(ind)] = log10(nₚ)
+#     Sheet["B"*string(ind)] = log10(4/ndiv)
+#     # Sheet["B"*string(ind)] = log10(nₚ)
 # end
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
 # ax2 = Axis3(fig[1,2])
 
-xs = zeros(nₚ)
-ys = zeros(nₚ)
-ds = zeros(nₚ)
-δds = zeros(nₚ)
+xs = zeros(nₚ + nₗ + nₑ)
+ys = zeros(nₚ + nₗ + nₑ)
+ds = zeros(nₚ + nₗ + nₑ)
+δds = zeros(nₚ + nₗ + nₑ)
 for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
@@ -146,8 +158,8 @@ fig
 
 
 # save("./fig/hmd_2d/四边形节点/t=100.png",fig)
-# save("./fig/hmd_2d/局部加密C=0.2/T6_c=0.05.png",fig)
-# save("./fig/hmd_2d/hermite/Tri3/非均布/n=30.png",fig)
+# save("./fig/hmd_2d/局部加密C=0.2/hermite/c=0.02.png",fig)
+# save("./fig/hmd_2d/hermite/Tri3/非均布/c=0.1.png",fig)
 # save("./fig/hmd_2d/hermite/Tri3/均布/n=20.png",fig)
 
 # points = zeros(3,nₚ)
