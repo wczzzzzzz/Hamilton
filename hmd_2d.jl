@@ -12,7 +12,7 @@ using GLMakie, XLSX
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 0.05
+ndiv= 10
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
@@ -32,7 +32,7 @@ set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
-# set∇𝝭!(elements["Ωᵍ"])
+set∇𝝭!(elements["Ωᵍ"])
 
 # ρA = 1.0*25.0/100.0
 ρA = 1.0
@@ -62,6 +62,8 @@ prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 # prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
+prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
+
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
@@ -112,13 +114,13 @@ push!(nodes,:d=>d,:δd=>δd)
 
 # index = [10,20,40,80]
 # index = [0.4,0.3,0.2,0.1]
-# # index = [0,1,2,3,4]
-# XLSX.openxlsx("./excel/xinsuanzi.xlsx", mode="rw") do xf
-#     Sheet = xf[2]
+# index = [0,1,2,3]
+# XLSX.openxlsx("./excel/non_uniform.xlsx", mode="rw") do xf
+#     Sheet = xf[7]
 #     ind = findfirst(n->n==ndiv,index)+1
 #     Sheet["A"*string(ind)] = 𝐿₂
 #     Sheet["B"*string(ind)] = log10(4/ndiv)
-#     Sheet["B"*string(ind)] = log10(nₚ)
+#     # Sheet["B"*string(ind)] = log10(nₚ)
 # end
 
 fig = Figure()
@@ -128,13 +130,21 @@ ax1 = Axis3(fig[1,1])
 xs = zeros(nₚ)
 ys = zeros(nₚ)
 ds = zeros(nₚ)
-δds = zeros(nₚ)
+# es = zeros(nₚ)
+# δds = zeros(nₚ)
+# us = zeros(nₚ)
+# for (i, node) in enumerate(nodes)
+#     x = node.x
+#     y = node.y
+#     us[i] = 𝑢(x,y)
+#     # q[i] = ∂u∂t(x,y)
+# end
 for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
-    # zs[i] = 𝑢(xs,ys)
     ds[i] = node.d
     # δds[i] = node.δd
+    # es[i] = ds[i] - us[i]
 end
 face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
@@ -144,6 +154,7 @@ end
 # mesh!(ax,xs,ys,zs,face,color=ds)
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
+# meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
 # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
 fig
 
@@ -157,12 +168,14 @@ fig
 # points = zeros(3,nₚ)
 # for (i,node) in enumerate(nodes)
 #     points[1,i] = node.x
-#     points[2,i] = node.y*4/3
-#     points[3,i] = node.d*4
+#     points[2,i] = node.y
+#     # points[3,i] = node.d
+#     points[3,i] = es[i]
 # end
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/nonuniform/非连续解/Tri6_"*string(ndiv)*".vtu",points,cells) do vtk
-#     vtk["d"] = [node.d for node in nodes]
+# vtk_grid("./vtk/hmd_2d/error/non_uniform_Tri3_"*string(ndiv)*".vtu",points,cells) do vtk
+#     # vtk["d"] = [node.d for node in nodes]
+#     vtk["误差"] = es
 # end
 
 # fₓ,fₜ,fₓₓ,fₜₜ = truncation_error(elements["Ω"],nₚ)
@@ -176,11 +189,11 @@ fig
 # points = [xs; ys; zs]
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
 # vtk_grid("./vtk/junbuceshi/"*uniform*"_"*string(ndiv), points, cells) do vtk
-#     # vtk["fₓ"] = fₓ
-#     # vtk["fₜ"] = fₜ
-#     # vtk["fₓₓ"] = fₓₓ
-#     # vtk["fₜₜ"] = fₜₜ
-#     # vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
+#     vtk["fₓ"] = fₓ
+#     vtk["fₜ"] = fₜ
+#     vtk["fₓₓ"] = fₓₓ
+#     vtk["fₜₜ"] = fₜₜ
+#     vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
 #     vtk["位移"] = d
 # end
 

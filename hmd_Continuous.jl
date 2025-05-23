@@ -1,6 +1,6 @@
 using  ApproxOperator, JuMP, Ipopt, XLSX, LinearAlgebra
 import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
-import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
+import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, L₂
 
 using GLMakie
 
@@ -8,8 +8,10 @@ using GLMakie
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 0.3
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
+ndiv= 32
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
+elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_0.5/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/2.5_"*string(ndiv)*".msh");uniform = "nonuniform"
 nₚ = length(nodes)
@@ -44,7 +46,7 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:t=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->φ(x))
-prescribe!(elements["Ω"],:c=>(x,y,z)->c)
+prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 k = zeros(nₚ,nₚ)
 f = zeros(nₚ)
@@ -72,6 +74,8 @@ d = dt[1:nₚ]
 # δd = dt[nₚ+1:end]
 push!(nodes,:d=>d)
 # push!(nodes,:δd=>δd)
+
+𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
@@ -104,6 +108,17 @@ fig
 # save("./fig/连续解/锁时间末端Tri_6均布/t=25.png",fig)
 # save("./fig/连续解/mix_Tri_6均布/t=25.png",fig)
 # save("./fig/连续解/mix_Tri_6非均布/n=41.png",fig)
+
+# index = [8,16,32,64]
+# # index = [0.4,0.3,0.2,0.1]
+# # index = [0,1,2,3]
+# XLSX.openxlsx("./excel/hmd_Continuous.xlsx", mode="rw") do xf
+#     Sheet = xf[1]
+#     ind = findfirst(n->n==ndiv,index)+1
+#     Sheet["A"*string(ind)] = log10(4/ndiv)
+#     # Sheet["A"*string(ind)] = log10(nₚ)
+#     Sheet["B"*string(ind)] = 𝐿₂
+# end
 
 # points = zeros(3,nₚ)
 # for (i,node) in enumerate(nodes)

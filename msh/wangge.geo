@@ -1,8 +1,8 @@
 
 a = 4.0;
 b = 4.0;
-//c = 0.5;
-n = 23;
+//c = 1.0;
+n = 21;
 //m = 16;
 
 Point(1) = {0.0, 0.0, 0.0, c};
@@ -23,7 +23,7 @@ Transfinite Curve{1,2,3,4} = n;
 //Transfinite Curve{2,4} = m;
 //Transfinite Curve{1,3} = n;
 
-//Transfinite Surface{1};
+Transfinite Surface{1};
 
 Physical Curve("Γ¹") = {1};
 Physical Curve("Γ²") = {2};
