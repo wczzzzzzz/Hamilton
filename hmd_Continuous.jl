@@ -1,6 +1,6 @@
 using  ApproxOperator, JuMP, Ipopt, XLSX, LinearAlgebra
 import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
-import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, L₂
+import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy
 
 using GLMakie
 
@@ -11,7 +11,7 @@ include("import_hmd.jl")
 ndiv= 32
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
 elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_0.5/"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/2.5_"*string(ndiv)*".msh");uniform = "nonuniform"
 nₚ = length(nodes)
@@ -23,9 +23,10 @@ set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
+set∇𝝭!(elements["Ωᵍ"])
 
-α = 1e10
-ρA = 1e0
+α = 1e7
+ρA = 1.0
 EA = 1.0
 a = 1.0
 l = 4.0
@@ -49,6 +50,7 @@ prescribe!(elements["Γ₁"],:g=>(x,y,z)->φ(x))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
 k = zeros(nₚ,nₚ)
+kˢ = zeros(nₚ,nₚ)
 f = zeros(nₚ)
 kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
@@ -75,7 +77,7 @@ d = dt[1:nₚ]
 push!(nodes,:d=>d)
 # push!(nodes,:δd=>δd)
 
-𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])

@@ -12,12 +12,12 @@ using GLMakie, XLSX
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 10
+ndiv= 64
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/局部加密/C=0.2/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_0.5/"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/拉伸压缩/2.1_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
@@ -92,7 +92,7 @@ d = dt[1:nₚ]
 
 push!(nodes,:d=>d,:δd=>δd)
 
-# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -112,15 +112,15 @@ push!(nodes,:d=>d,:δd=>δd)
 #     end
 # end
 
-# index = [10,20,40,80]
-# index = [0.4,0.3,0.2,0.1]
-# index = [0,1,2,3]
+# index = [4,8,16,32,64]
+# # index = [0.4,0.3,0.2,0.1]
+# # index = [0,1,2,3]
 # XLSX.openxlsx("./excel/non_uniform.xlsx", mode="rw") do xf
-#     Sheet = xf[7]
+#     Sheet = xf[1]
 #     ind = findfirst(n->n==ndiv,index)+1
-#     Sheet["A"*string(ind)] = 𝐿₂
-#     Sheet["B"*string(ind)] = log10(4/ndiv)
-#     # Sheet["B"*string(ind)] = log10(nₚ)
+#     Sheet["A"*string(ind)] = log10(4/ndiv)
+#     # Sheet["A"*string(ind)] = log10(nₚ)
+#     Sheet["B"*string(ind)] = 𝐿₂
 # end
 
 fig = Figure()

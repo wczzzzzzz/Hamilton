@@ -13,7 +13,7 @@ using SparseArrays
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 10
+ndiv= 8
 elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
@@ -97,8 +97,8 @@ d = dt[1:nₚ+nₗ+nₑ]
 δd = dt[nₚ+nₗ+nₑ+1:end]
 
 push!(nodes,:d=>d,:δd=>δd)
-# push!(nodes_t,:d=>d,:δd=>δd)
 
+# push!(nodes_t,:d=>d,:δd=>δd)
 # 𝐿₂ = log10.(L₂(elements["Ωᵗ"]))
 
 # for i in 1:nₚ
@@ -121,13 +121,13 @@ push!(nodes,:d=>d,:δd=>δd)
 
 # index = [10,20,40,80]
 # index = [0.4,0.2,0.1,0.05]
-# index = [8,16,32,64]
+# index = [4,8,16,32]
 # XLSX.openxlsx("./excel/hermite.xlsx", mode="rw") do xf
-#     Sheet = xf[3]
+#     Sheet = xf[5]
 #     ind = findfirst(n->n==ndiv,index)+1
-#     Sheet["A"*string(ind)] = 𝐿₂
-#     Sheet["B"*string(ind)] = log10(4/ndiv)
-#     # Sheet["B"*string(ind)] = log10(nₚ)
+#     Sheet["A"*string(ind)] = log10(4/ndiv)
+#     # Sheet["A"*string(ind)] = log10(nₚ)
+#     Sheet["B"*string(ind)] = 𝐿₂
 # end
 
 fig = Figure()
@@ -137,9 +137,14 @@ ax1 = Axis3(fig[1,1])
 xs = zeros(nₚ + nₗ + nₑ)
 ys = zeros(nₚ + nₗ + nₑ)
 ds = zeros(nₚ + nₗ + nₑ)
-# δds = zeros(nₚ + nₗ + nₑ)
-# es = zeros(nₚ + nₗ + nₑ)
 
+# es = zeros(nₚ + nₗ + nₑ)
+# us = zeros(nₚ + nₗ + nₑ)
+# for (i, node) in enumerate(nodes)
+#     x = node.x
+#     y = node.y
+#     us[i] = 𝑢(x,y)
+# end
 for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
