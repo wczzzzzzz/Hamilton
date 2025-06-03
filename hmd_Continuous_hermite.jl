@@ -35,6 +35,7 @@ l = 4.0
 c = (EA/ρA)^0.5
 φ(x) = sin(π*x/l)
 𝑢(x,t) = cos.(π.*a.*t/l).*sin.(π.*x/l)
+𝑇(x) = EA*π*cos(π*x/l)
 
 prescribe!(elements["Γ₄ᵗ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃ᵗ"],:g=>(x,y,z)->0.0)
@@ -47,7 +48,7 @@ prescribe!(elements["Γ₁ᵗ"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂ᵗ"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃ᵗ"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₄ᵗ"],:α=>(x,y,z)->α)
-prescribe!(elements["Γ₁ᵗ"],:t=>(x,y,z)->0.0)
+prescribe!(elements["Γ₁ᵗ"],:t=>(x,y,z)->𝑇(x))
 prescribe!(elements["Γ₁ᵗ"],:g=>(x,y,z)->φ(x))
 # prescribe!(elements["Ωᵗ"],:u=>(x,y,z)->𝑢(x,y))
 

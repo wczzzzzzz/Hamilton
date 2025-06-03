@@ -33,6 +33,7 @@ l = 4.0
 c = (EA/ρA)^0.5
 φ(x) = sin(π*x/l)
 𝑢(x,t) = cos.(π.*a.*t/l).*sin.(π.*x/l)
+𝑇(x) = EA*cos(π*a/l)*sin(π*x/l)
 
 prescribe!(elements["Γ₄"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
@@ -45,7 +46,8 @@ prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
-prescribe!(elements["Γ₁"],:t=>(x,y,z)->0.0)
+# prescribe!(elements["Γ₁"],:t=>(x,y,z)->0.0)
+prescribe!(elements["Γ₁"],:t=>(x,y,z)->-𝑇(x))
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->φ(x))
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
@@ -59,6 +61,7 @@ fᵝ = zeros(nₚ)
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
 𝑓 = ∫vtdΓ=>elements["Γ₁"]
+# 𝑓 = ∫vtdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₄"]
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]∪elements["Γ₁"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₂"]∪elements["Γ₄"]∪elements["Γ₁"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]∪elements["Γ₄"]∪elements["Γ₂"]

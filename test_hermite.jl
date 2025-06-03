@@ -21,9 +21,9 @@ set𝝭!(elements["Γ₄ᵗ"])
 # ∂u∂y(x,y,z) = 0.0
 
 # linear
-# u(x,y,z) = 1+2x+3y
-# ∂u∂x(x,y,z) = 2.0
-# ∂u∂y(x,y,z) = 3.0
+u(x,y,z) = 1+2x+3y
+∂u∂x(x,y,z) = 2.0
+∂u∂y(x,y,z) = 3.0
 
 # quadratic
 # u(x,y,z) = 1+2x+3y+4x^2+5x*y+6y^2
