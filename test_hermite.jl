@@ -2,9 +2,14 @@
 using ApproxOperator
 import ApproxOperator.Test: cc𝝭, cc∇𝝭
 
-include("importmsh.jl")
+# include("importmsh.jl")
+# elements, nodes, nodes_t, = import_hermite("trih.msh")
 
-elements, nodes, nodes_t, = import_hermite("trih.msh")
+include("import_hmd.jl")
+ndiv= 16
+# elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
+
 nₚ = length(nodes)
 nₑ = length(elements["Ωᵗ"])
 nₗ = length(nodes_t) - nₚ - nₑ
@@ -21,9 +26,9 @@ set𝝭!(elements["Γ₄ᵗ"])
 # ∂u∂y(x,y,z) = 0.0
 
 # linear
-u(x,y,z) = 1+2x+3y
-∂u∂x(x,y,z) = 2.0
-∂u∂y(x,y,z) = 3.0
+# u(x,y,z) = 1+2x+3y
+# ∂u∂x(x,y,z) = 2.0
+# ∂u∂y(x,y,z) = 3.0
 
 # quadratic
 # u(x,y,z) = 1+2x+3y+4x^2+5x*y+6y^2
@@ -31,9 +36,9 @@ u(x,y,z) = 1+2x+3y
 # ∂u∂y(x,y,z) = 3.0+12y+5x
 
 # cubic
-# u(x,y,z) = 1+2x+3y+4x^2+5x*y+6y^2+7x^3+8x^2*y+9x*y^2+10y^3
-# ∂u∂x(x,y,z) = 2.0+8x+5y+21x^2+16x*y+9y^2
-# ∂u∂y(x,y,z) = 3.0+12y+5x+8x^2+18x*y+30y^2
+u(x,y,z) = 1+2x+3y+4x^2+5x*y+6y^2+7x^3+8x^2*y+9x*y^2+10y^3
+∂u∂x(x,y,z) = 2.0+8x+5y+21x^2+16x*y+9y^2
+∂u∂y(x,y,z) = 3.0+12y+5x+8x^2+18x*y+30y^2
 
 prescribe!(elements["Ωᵗ"], :u=>u)
 prescribe!(elements["Ωᵗ"], :∂u∂x=>∂u∂x)
@@ -71,6 +76,6 @@ end
 push!(nodes_t,:d=>d)
 
 # err = cc𝝭(elements["Ωᵗ"])
-err = cc𝝭(elements["Γ₁ᵗ"])
-# err = cc∇𝝭(elements["Ωᵗ"])
+# err = cc𝝭(elements["Γ₁ᵗ"])
+err = cc∇𝝭(elements["Ωᵗ"])
 # err = cc𝝭(elements["Ωᵗ"][1:1])
