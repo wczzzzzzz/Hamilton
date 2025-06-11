@@ -12,12 +12,12 @@ using GLMakie, XLSX
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 64
+ndiv= 32
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/局部加密/C=0.2/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
-elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/拉伸压缩/2.1_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
@@ -49,7 +49,29 @@ function 𝑢(x,t)
         return (1-cos(π*(t - x)))/π
     end
 end
-
+# function ∂u∂t(x, t)
+#     if x < t - 1 || x > t
+#         return 0.0
+#     else
+#         return sin(π * (t - x))
+#     end
+# end
+# function ∂u∂x(x, t)
+#     if x < t - 1
+#         return 0.0
+#     elseif x > t
+#         return 0.0
+#     else
+#         return -sin(π*(t - x))
+#     end
+# end
+# function ∂²u∂t²(x, t)
+#     if x < t - 1 || x > t
+#         return 0.0
+#     else
+#         return π * cos(π * (t - x))
+#     end
+# end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
@@ -63,6 +85,10 @@ prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
+
+# prescribe!(elements["Ωᵍ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
+# prescribe!(elements["Ωᵍ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
+# prescribe!(elements["Ωᵍ"],:∂u∂z=>(x,y,z)->0.0)
 
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ω"]
@@ -78,11 +104,13 @@ kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
+kᵗ = zeros(nₚ,nₚ)
 
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
+
 
 dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
@@ -92,7 +120,8 @@ d = dt[1:nₚ]
 
 push!(nodes,:d=>d,:δd=>δd)
 
-𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -112,15 +141,16 @@ push!(nodes,:d=>d,:δd=>δd)
 #     end
 # end
 
-# index = [4,8,16,32,64]
+# index = [8,16,32,64]
 # # index = [0.4,0.3,0.2,0.1]
 # # index = [0,1,2,3]
-# XLSX.openxlsx("./excel/non_uniform.xlsx", mode="rw") do xf
-#     Sheet = xf[1]
+# XLSX.openxlsx("./excel/hmd_2d_square.xlsx", mode="rw") do xf
+#     Sheet = xf[4]
 #     ind = findfirst(n->n==ndiv,index)+1
 #     Sheet["A"*string(ind)] = log10(4/ndiv)
 #     # Sheet["A"*string(ind)] = log10(nₚ)
-#     Sheet["B"*string(ind)] = 𝐿₂
+#     Sheet["B"*string(ind)] = 𝐻₁
+#     Sheet["C"*string(ind)] = 𝐿₂
 # end
 
 fig = Figure()
@@ -130,33 +160,36 @@ ax1 = Axis3(fig[1,1])
 xs = zeros(nₚ)
 ys = zeros(nₚ)
 ds = zeros(nₚ)
-# es = zeros(nₚ)
-# δds = zeros(nₚ)
-# us = zeros(nₚ)
-# for (i, node) in enumerate(nodes)
-#     x = node.x
-#     y = node.y
-#     us[i] = 𝑢(x,y)
-#     # q[i] = ∂u∂t(x,y)
-# end
+us = zeros(nₚ)
+# qs = zeros(nₚ)
+# as = zeros(nₚ)
+es = zeros(nₚ)
+
+for (i, node) in enumerate(nodes)
+    x = node.x
+    y = node.y
+    us[i] = 𝑢(x,y)
+    # qs[i] = ∂u∂t(x,y)
+    # as[i] = ∂²u∂t²(x,y)
+end
 for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
     ds[i] = node.d
     # δds[i] = node.δd
-    # es[i] = ds[i] - us[i]
+    es[i] = ds[i] - us[i]
 end
 face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
 
-# mesh!(ax,xs,ys,zs,face,color=ds)
-# meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
+# # mesh!(ax,xs,ys,zs,face,color=ds)
+# # meshscatter!(ax1,xs,ys,us,color=us,markersize = 0.1)
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
-# meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
-# meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
-fig
+# # meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
+# # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
+# fig
 
 # save("./fig/hmd_2d/test_x=20/t=98.png",fig)
 # save("./fig/hmd_2d/四边形节点/t=100.png",fig)
@@ -170,12 +203,13 @@ fig
 #     points[1,i] = node.x
 #     points[2,i] = node.y
 #     # points[3,i] = node.d
-#     points[3,i] = es[i]
+#     points[3,i] = us[i]*4
 # end
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/hmd_2d/error/non_uniform_Tri3_"*string(ndiv)*".vtu",points,cells) do vtk
+# # vtk_grid("./vtk/hmd_2d/error/non_uniform_Tri3_"*string(ndiv)*".vtu",points,cells) do vtk
+# vtk_grid("./vtk/hmd_2d/exact_d_"*string(ndiv)*".vtu",points,cells) do vtk
 #     # vtk["d"] = [node.d for node in nodes]
-#     vtk["误差"] = es
+#     vtk["精确解"] = us
 # end
 
 # fₓ,fₜ,fₓₓ,fₜₜ = truncation_error(elements["Ω"],nₚ)
@@ -184,16 +218,16 @@ fig
 # println(fₛ)
 
 # xs = [node.x for node in nodes]'
-# ys = [node.y*10/5 for node in nodes]'
+# ys = [node.y for node in nodes]'
 # zs = [node.z for node in nodes]'
 # points = [xs; ys; zs]
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/junbuceshi/"*uniform*"_"*string(ndiv), points, cells) do vtk
-#     vtk["fₓ"] = fₓ
-#     vtk["fₜ"] = fₜ
-#     vtk["fₓₓ"] = fₓₓ
-#     vtk["fₜₜ"] = fₜₜ
-#     vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
-#     vtk["位移"] = d
+# vtk_grid("./vtk/hmd_2d/error/uniform_Tri3_"*string(ndiv), points, cells) do vtk
+#     # vtk["fₓ"] = fₓ
+#     # vtk["fₜ"] = fₜ
+#     # vtk["fₓₓ"] = fₓₓ
+#     # vtk["fₜₜ"] = fₜₜ
+#     # vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
+#     vtk["误差"] = es
 # end
 
