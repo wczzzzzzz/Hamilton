@@ -110,8 +110,10 @@ kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
 
-kᵗ = [k+kᵅ -k;-k kᵝ]
-C = cond(k)
+kᵗ = inv(k + kᵅ)
+# kˢ = -k*kᵗ*k' + kᵝ
+kˢ = [k+kᵅ -k;-k kᵝ]
+C = condskeel(kˢ)
 println(C)
 
 # dt = sparse([k+kᵅ -k;-k kᵝ])\[fᵅ;-f+fᵝ]

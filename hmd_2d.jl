@@ -4,7 +4,7 @@ using WriteVTK
 import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫pudΩ, ∫uudΩ, ∫ppdΩ, stabilization_bar_LSG, truncation_error
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
 
-using GLMakie, XLSX
+using GLMakie, XLSX, LinearAlgebra
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
@@ -12,7 +12,7 @@ using GLMakie, XLSX
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 32
+ndiv= 10
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
 elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
@@ -22,6 +22,7 @@ elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uni
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
+
 
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -111,6 +112,11 @@ kᵗ = zeros(nₚ,nₚ)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
 
+kᵗ = inv(k + kᵅ)
+# kˢ = -k*kᵗ*k' + kᵝ
+kˢ = [k+kᵅ -k;-k kᵝ]
+C = condskeel(kˢ)
+println(C)
 
 dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
@@ -189,7 +195,7 @@ end
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # # meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
 # # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
-# fig
+fig
 
 # save("./fig/hmd_2d/test_x=20/t=98.png",fig)
 # save("./fig/hmd_2d/四边形节点/t=100.png",fig)
@@ -197,6 +203,7 @@ meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # save("./fig/hmd_2d/锁三边x=20/Tri6/均布/t=25.png",fig)
 # save("./fig/hmd_2d/局部加密C=0.2/T6_c=0.05.png",fig)
 # save("./fig/hmd_2d/Tri3/非均布/n=80.png",fig)
+
 
 # points = zeros(3,nₚ)
 # for (i,node) in enumerate(nodes)

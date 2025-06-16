@@ -3,15 +3,16 @@ using ApproxOperator, GLMakie
 
 import Gmsh: gmsh
 
-ndiv = 64
+ndiv = 9
 gmsh.initialize()
 # gmsh.open("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh")
 # gmsh.open("./msh/Non-uniform/局部加密/Tri3_"*string(ndiv)*".msh")
 # gmsh.open("./msh/b=2/Tri3反向"*string(ndiv)*".msh")
-gmsh.open("./msh/square/square_"*string(ndiv)*".msh")
+# gmsh.open("./msh/square/square_"*string(ndiv)*".msh")
 # gmsh.open("./msh/b=2/Tri3非均布"*string(ndiv)*".msh")
 # gmsh.open("./msh/MorleysAcuteSkewPlate_"*string(ndiv)*".msh")
 # gmsh.open("./msh/SquarePlate_"*string(ndiv)*".msh")
+
 entities = getPhysicalGroups()
 nodes = get𝑿ᵢ()
 
