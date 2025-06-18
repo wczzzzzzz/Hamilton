@@ -14,12 +14,12 @@ using LinearAlgebra
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 8
-elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+ndiv= 4
+# elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/局部加密/C=0.4/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
-# elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
 
 nₚ = length(nodes)
 nₑ = length(elements["Ωᵗ"])
@@ -86,35 +86,35 @@ prescribe!(elements["Γ₄ᵗ"],:t=>(x,y,z)->-𝑇(y))
 𝑓 = ∫vtdΓ=>elements["Γ₄ᵗ"]
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁ᵗ"]∪elements["Γ₂ᵗ"]
-𝑎ᵝ = ∫vgdΓ=>elements["Γ₃ᵗ"]
+𝑎ᵝ = ∫vgdΓ=>elements["Γ₃ᵗ"]∪elements["Γ₂ᵗ"]
 
-k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-f = zeros(nₚ+nₗ+nₑ)
-kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵅ = zeros(nₚ+nₗ+nₑ)
-kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵝ = zeros(nₚ+nₗ+nₑ)
-kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# f = zeros(nₚ+nₗ+nₑ)
+# kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵅ = zeros(nₚ+nₗ+nₑ)
+# kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵝ = zeros(nₚ+nₗ+nₑ)
+# kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
 
-# k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# f = zeros(nₚ + nₗ + nₑ)
-# kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# fᵅ = zeros(nₚ + nₗ + nₑ)
-# kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# fᵝ = zeros(nₚ + nₗ + nₑ)
+k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+f = zeros(nₚ + nₗ + nₑ)
+kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵅ = zeros(nₚ + nₗ + nₑ)
+kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵝ = zeros(nₚ + nₗ + nₑ)
 
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
 
-kᵗ = inv(k + kᵅ)
-# kˢ = -k*kᵗ*k' + kᵝ
-kˢ = [k+kᵅ -k;-k kᵝ]
-C = condskeel(kˢ)
-println(C)
+# kᵗ = inv(k + kᵅ)
+# # kˢ = -k*kᵗ*k' + kᵝ
+# kˢ = [k+kᵅ -k;-k kᵝ]
+# C = condskeel(kˢ)
+# println(C)
 
 # dt = sparse([k+kᵅ -k;-k kᵝ])\[fᵅ;-f+fᵝ]
 dt = ([k+kᵅ -k;-k kᵝ])\[fᵅ;-f+fᵝ]
@@ -193,8 +193,7 @@ end
 # # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
-# fig
-
+fig
 
 # save("./fig/hmd_2d/四边形节点/t=100.png",fig)
 # save("./fig/hmd_2d/局部加密C=0.2/hermite/c=0.02.png",fig)

@@ -234,6 +234,50 @@ function import_hmd_mix(filename1::String,filename2::String,n::Int)
     return elements, nodes, nodes_s
 end
 
+function import_hmd_mix_uv(filename1::String, filename2::String, n::Int)
+    gmsh.initialize()
+
+    gmsh.open(filename1)
+    integrationorder = 8
+    integrationorder_Ωᵍ = 10
+    entities = getPhysicalGroups()
+    nodes = get𝑿ᵢ()
+    
+    elements = Dict{String,Vector{ApproxOperator.AbstractElement}}()
+    elements["Ω"] = getElements(nodes, entities["Ω"], integrationorder)
+    elements["Γ₁"] = getElements(nodes, entities["Γ¹"], integrationorder)
+    elements["Γ₂"] = getElements(nodes, entities["Γ²"], integrationorder)
+    elements["Γ₃"] = getElements(nodes, entities["Γ³"], integrationorder)
+    elements["Γ₄"] = getElements(nodes, entities["Γ⁴"], integrationorder)
+    elements["Ωᵍ"] = getElements(nodes, entities["Ω"], integrationorder_Ωᵍ)
+    
+    gmsh.open(filename2)
+    entities_p = getPhysicalGroups()
+    nodes_p = get𝑿ᵢ()
+    
+    elements["Ωₚ"] = getElements(nodes_p, entities_p["Ω"], integrationorder)
+    elements["Γ₁ₚ"] = getElements(nodes_p, entities_p["Γ¹"], integrationorder)
+    elements["Γ₂ₚ"] = getElements(nodes_p, entities_p["Γ²"], integrationorder)
+    elements["Γ₃ₚ"] = getElements(nodes_p, entities_p["Γ³"], integrationorder)
+    elements["Γ₄ₚ"] = getElements(nodes_p, entities_p["Γ⁴"], integrationorder)
+    elements["Ωᵍ"] = getElements(nodes, entities["Ω"], integrationorder_Ωᵍ)
+
+    push!(elements["Ω"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
+    push!(elements["Γ₁"], :𝝭)
+    push!(elements["Γ₂"], :𝝭)
+    push!(elements["Γ₃"], :𝝭)
+    push!(elements["Γ₄"], :𝝭)
+    push!(elements["Ωₚ"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
+    push!(elements["Γ₁ₚ"], :𝝭)
+    push!(elements["Γ₂ₚ"], :𝝭)
+    push!(elements["Γ₃ₚ"], :𝝭)
+    push!(elements["Γ₄ₚ"], :𝝭)
+    push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂𝝭∂z)
+
+    # gmsh.finalize()
+    return elements, nodes, nodes_p
+end
+
 function import_hermite(filename::String)
     gmsh.initialize()
     gmsh.open(filename)

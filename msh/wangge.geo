@@ -1,8 +1,8 @@
 
 a = 4.0;
 b = 4.0;
-//c = 1.0;
-n = 10;
+c = 1.0;
+//n = 10;
 //m = 16;
 
 Point(1) = {0.0, 0.0, 0.0, c};
@@ -19,12 +19,12 @@ Curve Loop(1) = {1,2,3,4};
 
 Plane Surface(1) = {1};
 
-Transfinite Curve{1,2,3,4} = n;
-Transfinite Curve{2,-4} = 10 Using Progression 1.4;
+//Transfinite Curve{1,2,3,4} = n;
 //Transfinite Curve{2,4} = m;
 //Transfinite Curve{1,3} = n;
+//Transfinite Curve{2,-4} = 10 Using Progression 1.4;
 
-Transfinite Surface{1};
+//Transfinite Surface{1};
 
 Physical Curve("Γ¹") = {1};
 Physical Curve("Γ²") = {2};
@@ -39,5 +39,6 @@ Mesh.SecondOrderIncomplete = 1;
 Mesh 2;
 //RecombineMesh;
 
-//SetOrder 2;
 //RefineMesh;
+
+//SetOrder 2;

@@ -3,9 +3,9 @@ using ApproxOperator, GLMakie
 
 import Gmsh: gmsh
 
-ndiv = 9
+ndiv = 32
 gmsh.initialize()
-# gmsh.open("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh")
+gmsh.open("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh")
 # gmsh.open("./msh/Non-uniform/局部加密/Tri3_"*string(ndiv)*".msh")
 # gmsh.open("./msh/b=2/Tri3反向"*string(ndiv)*".msh")
 # gmsh.open("./msh/square/square_"*string(ndiv)*".msh")
@@ -43,7 +43,7 @@ z = 0
 ps = Point3f.(x,y,z)
 scatter!(ps, 
     marker=:circle,
-    markersize = 2.0,
+    markersize = 1.0,
     color = :black
 )
 
@@ -69,6 +69,8 @@ end
 # save("./fig/square_"*string(ndiv)*".png",f)
 # save("./fig/三角形节点网格/Tri3非均布_Rf_1.0_5"*string(ndiv)*".png",f, px_per_unit = 2.0)
 # save("./fig/三角形节点网格/Tri3_square_"*string(ndiv)*".png",f)
+# save("./fig/三角形节点网格/Tri6非均布_Rf_1.0_3"*string(ndiv)*".png",f, px_per_unit = 2.0)
+
 
 
 f

@@ -8,12 +8,13 @@ using GLMakie
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 64
+ndiv= 32
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/2.5_"*string(ndiv)*".msh");uniform = "nonuniform"
+elements,nodes = import_hmd_Tri6("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh");uniform = "uniform"
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
@@ -50,11 +51,11 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:t=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->φ(x))
-prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
-#  prescribe!(elements["Ωᵍ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
-# prescribe!(elements["Ωᵍ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
-# prescribe!(elements["Ωᵍ"],:∂u∂z=>(x,y,z)->0.0)
+prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
+prescribe!(elements["Ωᵍ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
+prescribe!(elements["Ωᵍ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
+prescribe!(elements["Ωᵍ"],:∂u∂z=>(x,y,z)->0.0)
 
 k = zeros(nₚ,nₚ)
 kˢ = zeros(nₚ,nₚ)
@@ -86,7 +87,8 @@ push!(nodes,:d=>d)
 # push!(nodes,:δd=>δd)
 
 # 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
-𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+# println(𝐿₂)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
@@ -115,7 +117,7 @@ for (i,node) in enumerate(nodes)
     # δds[i] = node.δd
     es[i] = ds[i] - us[i]
 end
-face = zeros(nₑ,3)
+face = zeros(nₑ,6)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
@@ -125,6 +127,8 @@ end
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax1,xs,ys,us,color=us,markersize = 0.1)
 # fig
+
+# save("./fig/617测试/非均布_32.png",fig)
 
 # save("./fig/连续解/锁时间末端Tri_6非均布/t=19.png",fig)
 # save("./fig/连续解/锁时间末端Tri_6均布/t=25.png",fig)

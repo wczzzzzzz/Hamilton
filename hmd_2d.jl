@@ -12,12 +12,12 @@ using GLMakie, XLSX, LinearAlgebra
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 10
+ndiv= 32
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/局部加密/C=0.2/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
-# elements,nodes = import_hmd_Tri3("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri6("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/拉伸压缩/2.1_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
@@ -41,15 +41,15 @@ EA = 1.0
 α = 1e7
 c = (EA/ρA)^0.5
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
-function 𝑢(x,t)
-    if x < t - 1
-        return 2/π
-    elseif x > t
-        return 0.0
-    else
-        return (1-cos(π*(t - x)))/π
-    end
-end
+# function 𝑢(x,t)
+#     if x < t - 1
+#         return 2/π
+#     elseif x > t
+#         return 0.0
+#     else
+#         return (1-cos(π*(t - x)))/π
+#     end
+# end
 # function ∂u∂t(x, t)
 #     if x < t - 1 || x > t
 #         return 0.0
@@ -85,8 +85,8 @@ prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 # prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
-prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 
+# prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 # prescribe!(elements["Ωᵍ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
 # prescribe!(elements["Ωᵍ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
 # prescribe!(elements["Ωᵍ"],:∂u∂z=>(x,y,z)->0.0)
@@ -96,7 +96,7 @@ prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
 𝑓 = ∫vtdΓ=>elements["Γ₄"]
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
-𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]
+𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]∪elements["Γ₂"]
 
 k = zeros(nₚ,nₚ)
 kˢ = zeros(nₚ,nₚ)
@@ -112,11 +112,11 @@ kᵗ = zeros(nₚ,nₚ)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
 
-kᵗ = inv(k + kᵅ)
-# kˢ = -k*kᵗ*k' + kᵝ
-kˢ = [k+kᵅ -k;-k kᵝ]
-C = condskeel(kˢ)
-println(C)
+# kᵗ = inv(k + kᵅ)
+# # kˢ = -k*kᵗ*k' + kᵝ
+# kˢ = [k+kᵅ -k;-k kᵝ]
+# C = condskeel(kˢ)
+# println(C)
 
 dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
@@ -185,7 +185,7 @@ for (i,node) in enumerate(nodes)
     # δds[i] = node.δd
     es[i] = ds[i] - us[i]
 end
-face = zeros(nₑ,3)
+face = zeros(nₑ,6)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
