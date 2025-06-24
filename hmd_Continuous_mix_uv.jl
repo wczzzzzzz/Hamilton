@@ -129,7 +129,7 @@ end
 # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax2,xp,yp,δds,color=δds,markersize = 0.1)
-# fig
+fig
 
 # save("./fig/617测试/32.png",fig)
 

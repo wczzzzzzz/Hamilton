@@ -12,15 +12,15 @@ using GLMakie, XLSX, LinearAlgebra
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 32
+ndiv= 8
+# elements,nodes = import_hmd_Tri3("./msh/square/拉伸压缩/2.0_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/局部加密/C=0.2/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
-elements,nodes = import_hmd_Tri6("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri6("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/拉伸压缩/2.1_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
-# elements,nodes = import_hmd_Quad("./msh/test_x=20/"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 
 
@@ -35,21 +35,21 @@ set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
 set∇𝝭!(elements["Ωᵍ"])
 
-# ρA = 1.0*25.0/100.0
-ρA = 1.0
+ρA = 1.0*225.0/100.0
+# ρA = 1.0
 EA = 1.0
 α = 1e7
 c = (EA/ρA)^0.5
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
-# function 𝑢(x,t)
-#     if x < t - 1
-#         return 2/π
-#     elseif x > t
-#         return 0.0
-#     else
-#         return (1-cos(π*(t - x)))/π
-#     end
-# end
+function 𝑢(x,t)
+    if x < t - 1
+        return 2/π
+    elseif x > t
+        return 0.0
+    else
+        return (1-cos(π*(t - x)))/π
+    end
+end
 # function ∂u∂t(x, t)
 #     if x < t - 1 || x > t
 #         return 0.0
@@ -185,7 +185,7 @@ for (i,node) in enumerate(nodes)
     # δds[i] = node.δd
     es[i] = ds[i] - us[i]
 end
-face = zeros(nₑ,6)
+face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end

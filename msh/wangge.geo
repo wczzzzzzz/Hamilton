@@ -1,8 +1,8 @@
 
 a = 4.0;
-b = 4.0;
-c = 1.0;
-//n = 10;
+b = 8.0;
+c = 0.8;
+//n = 9;
 //m = 16;
 
 Point(1) = {0.0, 0.0, 0.0, c};
@@ -32,7 +32,8 @@ Physical Curve("Γ³") = {3};
 Physical Curve("Γ⁴") = {4};
 Physical Surface("Ω") = {1};
 
-Mesh.Algorithm = 4;
+Mesh.Algorithm = 2;
+//Mesh.Algorithm = 5;
 Mesh.MshFileVersion = 2;
 
 Mesh.SecondOrderIncomplete = 1;
@@ -40,5 +41,6 @@ Mesh 2;
 //RecombineMesh;
 
 //RefineMesh;
+
 
 //SetOrder 2;
