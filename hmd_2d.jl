@@ -1,10 +1,10 @@
 using  ApproxOperator
 
 using WriteVTK
-import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫pudΩ, ∫uudΩ, ∫ppdΩ, stabilization_bar_LSG, truncation_error
+import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, ∫pudΩ, ∫uudΩ, ∫ppdΩ, stabilization_bar_LSG, stabilization_bar_LSG_Γ, truncation_error, test_boundary_error, test_domain_error
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
 
-using GLMakie, XLSX, LinearAlgebra
+using GLMakie, XLSX, LinearAlgebra, LinearSolve
 
 # ps = MKLPardisoSolver()
 # set_matrixtype!(ps,2)
@@ -12,8 +12,8 @@ using GLMakie, XLSX, LinearAlgebra
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 8
-# elements,nodes = import_hmd_Tri3("./msh/square/拉伸压缩/2.0_"*string(ndiv)*".msh")
+ndiv= 20
+elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/Tri6_"*string(ndiv)*".msh")
 elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
@@ -27,18 +27,21 @@ elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uni
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
-# set∇²𝝭!(elements["Ω"])
-set∇𝝭!(elements["Ω"])
+set∇²𝝭!(elements["Ω"])
+# set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
+set∇𝝭!(elements["Γ₃ₜ"])
+set∇𝝭!(elements["Γ₄ₜ"])
 set∇𝝭!(elements["Ωᵍ"])
 
 ρA = 1.0*225.0/100.0
 # ρA = 1.0
 EA = 1.0
-α = 1e7
+α = 1e6
+# β = 1e12
 c = (EA/ρA)^0.5
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
@@ -50,22 +53,22 @@ function 𝑢(x,t)
         return (1-cos(π*(t - x)))/π
     end
 end
-# function ∂u∂t(x, t)
-#     if x < t - 1 || x > t
-#         return 0.0
-#     else
-#         return sin(π * (t - x))
-#     end
-# end
-# function ∂u∂x(x, t)
-#     if x < t - 1
-#         return 0.0
-#     elseif x > t
-#         return 0.0
-#     else
-#         return -sin(π*(t - x))
-#     end
-# end
+function ∂u∂t(x, t)
+    if x < t - 1 || x > t
+        return 0.0
+    else
+        return sin(π * (t - x))
+    end
+end
+function ∂u∂x(x, t)
+    if x < t - 1
+        return 0.0
+    elseif x > t
+        return 0.0
+    else
+        return -sin(π*(t - x))
+    end
+end
 # function ∂²u∂t²(x, t)
 #     if x < t - 1 || x > t
 #         return 0.0
@@ -75,6 +78,7 @@ end
 # end
 prescribe!(elements["Ω"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ω"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Ω"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₂"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
@@ -84,6 +88,12 @@ prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
 # prescribe!(elements["Γ₃"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
+prescribe!(elements["Γ₃ₜ"],:EA=>(x,y,z)->EA)
+prescribe!(elements["Γ₄ₜ"],:EA=>(x,y,z)->EA)
+prescribe!(elements["Γ₃ₜ"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Γ₄ₜ"],:ρA=>(x,y,z)->ρA)
+prescribe!(elements["Γ₃ₜ"],:α=>(x,y,z)->α)
+prescribe!(elements["Γ₄ₜ"],:α=>(x,y,z)->α)
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
 # prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
@@ -97,6 +107,11 @@ prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 # 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]∪elements["Γ₃"]∪elements["Γ₄"]
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁"]∪elements["Γ₂"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]∪elements["Γ₂"]
+# 𝑎ᵞ = stabilization_bar_LSG_Γ=>elements["Γ₄ₜ"]∪elements["Γ₃ₜ"]
+𝑎ᵞ = [
+    stabilization_bar_LSG=>elements["Ω"],
+    stabilization_bar_LSG_Γ=>elements["Γ₄ₜ"]∪elements["Γ₃ₜ"],
+]
 
 k = zeros(nₚ,nₚ)
 kˢ = zeros(nₚ,nₚ)
@@ -105,12 +120,14 @@ kᵅ = zeros(nₚ,nₚ)
 fᵅ = zeros(nₚ)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
+kᵞ = zeros(nₚ,nₚ)
 kᵗ = zeros(nₚ,nₚ)
 
 𝑎(k)
 𝑓(f)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑎ᵝ(kᵝ,fᵝ)
+𝑎ᵞ(kᵞ)
 
 # kᵗ = inv(k + kᵅ)
 # # kˢ = -k*kᵗ*k' + kᵝ
@@ -118,13 +135,25 @@ kᵗ = zeros(nₚ,nₚ)
 # C = condskeel(kˢ)
 # println(C)
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# dt = [k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
 # dt = [k -k;-k+kᵅ kᵝ]\[zeros(nₚ);-f+fᵝ+fᵅ]
+prob = LinearProblem([k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ], [fᵅ;-f+fᵝ])
+sol = solve(prob)
+dt = sol.u
+
 d = dt[1:nₚ]
 δd = dt[nₚ+1:end]
 
 push!(nodes,:d=>d,:δd=>δd)
+
+ed = test_domain_error(elements["Ω"])
+e3 = test_boundary_error(elements["Γ₃ₜ"])
+e4 = test_boundary_error(elements["Γ₄ₜ"])
+println(ed)
+println(e3)
+println(e4)
 
 # 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
 # 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
@@ -161,11 +190,12 @@ push!(nodes,:d=>d,:δd=>δd)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
-# ax2 = Axis3(fig[1,2])
+ax2 = Axis3(fig[1,2])
 
 xs = zeros(nₚ)
 ys = zeros(nₚ)
 ds = zeros(nₚ)
+δds = zeros(nₚ)
 us = zeros(nₚ)
 # qs = zeros(nₚ)
 # as = zeros(nₚ)
@@ -182,7 +212,7 @@ for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
     ds[i] = node.d
-    # δds[i] = node.δd
+    δds[i] = node.δd
     es[i] = ds[i] - us[i]
 end
 face = zeros(nₑ,3)
@@ -194,7 +224,7 @@ end
 # # meshscatter!(ax1,xs,ys,us,color=us,markersize = 0.1)
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # # meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
-# # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
+meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.06)
 fig
 
 # save("./fig/hmd_2d/test_x=20/t=98.png",fig)
