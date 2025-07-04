@@ -12,7 +12,7 @@ using GLMakie, XLSX, LinearAlgebra, LinearSolve
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 32
+ndiv= 8
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/618/Tri6_0.5_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
@@ -134,7 +134,7 @@ kᵗ = zeros(nₚ,nₚ)
 # println(C)
 
 # dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-dt = [k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ]\[fᵅ;-f+fᵝ]
+# dt = [k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ]\[fᵅ;-f+fᵝ]
 # dt =(k+kᵅ)\(f+fᵅ)
 prob = LinearProblem([k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ], [fᵅ;-f+fᵝ])
 sol = solve(prob)
@@ -145,12 +145,12 @@ d = dt[1:nₚ]
 
 push!(nodes,:d=>d,:δd=>δd)
 
-ed = test_domain_error(elements["Ω"])
-e3 = test_boundary_error(elements["Γ₃ₜ"])
-e4 = test_boundary_error(elements["Γ₄ₜ"])
-println(ed)
-println(e3)
-println(e4)
+# ed = test_domain_error(elements["Ω"])
+# e3 = test_boundary_error(elements["Γ₃ₜ"])
+# e4 = test_boundary_error(elements["Γ₄ₜ"])
+# println(ed)
+# println(e3)
+# println(e4)
 
 # 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
 # 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
@@ -222,7 +222,7 @@ end
 meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # # meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
 meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.06)
-# fig
+fig
 
 # save("./fig/hmd_2d/test_x=20/t=98.png",fig)
 # save("./fig/72测试/Tri6_非均布_LSG_32.png",fig)
@@ -236,8 +236,8 @@ meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.06)
 # for (i,node) in enumerate(nodes)
 #     points[1,i] = node.x
 #     points[2,i] = node.y
-#     # points[3,i] = node.d
-#     points[3,i] = us[i]*4
+#     points[3,i] = node.d
+#     # points[3,i] = us[i]*4
 # end
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
 # # vtk_grid("./vtk/hmd_2d/error/non_uniform_Tri3_"*string(ndiv)*".vtu",points,cells) do vtk
