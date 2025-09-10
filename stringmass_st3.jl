@@ -1,8 +1,8 @@
 using CairoMakie
 
-𝑘 = 1e2
+𝑘 = 100
 𝑚 = 1.0
-q̇₀ = 5.0
+q̇₀ = 1.0
 q₀ = 1.0
 
 fig = Figure()
@@ -11,7 +11,7 @@ Axis(fig[1, 1])
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 𝑢(t) = q₀*cos(𝜔*t) + q̇₀/𝜔*sin(𝜔*t)
-lines!(𝑡, 𝑥, color = :black)
+# lines!(𝑡, 𝑥, color = :black)
 
 dt = 0.005
 t = collect(0.0:dt:8.0)
@@ -49,11 +49,26 @@ d = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 d = d[1:nₚ]
 
 e = d - 𝑢.(t)
-# lines!(t, e, color = :red)
-lines!(t, d, color = :blue)
+lines!(t, e, color = :red)
+# lines!(t, d, color = :blue)
 # lines!(t, δd, color = :red)
+
+# invisible_line = lines!(ax, [0, 0], [0, 0], color = :white, label="Δt=0.005", visible=false)
+# blue_line = lines!(ax, t[1:2], q[1:2], color = :blue, label="Semi_implicit Euler")
+# black_line = lines!(ax, t[1:2], 𝑢.(t[1:2]), color = :black, label="Exact Solution")
+
 
 fig
 
 # save("./fig/一维/string_1d.png",fig)
 # save("./fig/一维/string_1d_e.png",fig)
+
+# XLSX.openxlsx("./excel/Euler.xlsx", mode="rw") do xf
+#     Sheet = xf[4]
+#     for i in 1:length(t)
+#        Sheet["A$(i)"] = t[i]
+#        Sheet["B$(i)"] = d[i]
+#        Sheet["C$(i)"] = 𝑥[i]
+#        Sheet["D$(i)"] = e[i]
+#     end
+# end

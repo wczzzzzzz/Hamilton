@@ -1,18 +1,18 @@
 using CairoMakie, LinearAlgebra
 
-𝑘 = 1e3
+𝑘 = 100
 𝑚 = 1.0
 q̇₀ = 1.0
-q₀ = 0.0
+q₀ = 1.0
 
 fig = Figure()
 Axis(fig[1, 1])
-𝑡 = 0.0:0.1:1.0
+𝑡 = 0.0:0.005:8.0
 𝜔 = (𝑘/𝑚)^0.5
 𝑥 = q₀.*cos.(𝜔.*𝑡) + q̇₀/𝜔.*sin.(𝜔.*𝑡)
 lines!(𝑡, 𝑥, color = :black)
 
-t = 0.0:0.1:1.0
+t = 0.0:0.005:8.0
 nₚ = length(t)
 nₑ = nₚ-1
 
@@ -71,7 +71,7 @@ f[nₚ] = q₀+𝐿*q̇₀
 
 d = k\f
 
-lines!(t, d, color = :orange)
+# lines!(t, d, color = :orange)
 
 fig
 

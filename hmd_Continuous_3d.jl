@@ -8,7 +8,7 @@ using GLMakie
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 16
+ndiv= 32
 # elements,nodes = import_hmd_Tri3("./msh/square/618/0.5_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/618/Tri6_2.0_"*string(ndiv)*".msh")
 
@@ -32,7 +32,7 @@ set∇𝝭!(elements["Γ₄ₜ"])
 set∇𝝭!(elements["Ωᵍ"])
 
 α = 1e6
-ρA = 1.0*50.0/100.0
+ρA = 1.0*1.0/289.0
 # ρA = 1.0
 EA = 1.0
 a = 1.0
@@ -83,26 +83,25 @@ kᵞ = zeros(nₚ,nₚ)
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₂"]∪elements["Γ₄"]∪elements["Γ₁"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]∪elements["Γ₄"]∪elements["Γ₂"]
 𝑎ᵞ = [
-    # stabilization_bar_LSG=>elements["Ω"],
-    # stabilization_bar_LSG_Γ=>elements["Γ₃ₜ"],
+    stabilization_bar_LSG=>elements["Ω"],
+    stabilization_bar_LSG_Γ=>elements["Γ₃ₜ"],
 ]
 
 𝑎ᵝ(kᵝ,fᵝ)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑓(f)
 𝑎(k)
-# 𝑎ᵞ(kᵞ)
+𝑎ᵞ(kᵞ)
 
-dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-# dt = [k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ]\[fᵅ;-f+fᵝ]
+# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+dt = [k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ]\[fᵅ;-f+fᵝ]
 # dt = (k+kᵅ)\(f+fᵅ)
-# prob = LinearProblem([k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ], [fᵅ;-f+fᵝ])
-# sol = solve(prob)
-# dt = sol.u
+prob = LinearProblem([k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ], [fᵅ;-f+fᵝ])
+sol = solve(prob)
+dt = sol.u
 
 d = dt[1:nₚ]
 
-# d = [k+kᵅ k;k kᵝ]\[f+fᵅ;f+fᵝ]
 δd = dt[nₚ+1:end]
 push!(nodes,:d=>d)
 push!(nodes,:δd=>δd)
@@ -155,7 +154,7 @@ meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
 # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.06)
 fig
 
-# save("./fig/630测试/Tri6_非均布_压缩_LSG_32.png",fig)
+# save("./fig/测试/74测试/Tri6_均布_LSG_c^2_32.png",fig)
 
 # save("./fig/连续解/锁时间末端Tri_6非均布/t=19.png",fig)
 # save("./fig/连续解/锁时间末端Tri_6均布/t=25.png",fig)

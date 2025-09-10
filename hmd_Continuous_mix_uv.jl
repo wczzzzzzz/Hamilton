@@ -3,18 +3,18 @@ import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, H₁
 
 using GLMakie
-
+import Gmsh: gmsh
 
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 32
-ndiv_p = 32
+ndiv= 16
+ndiv_p = 16
 
 # elements,nodes,nodes_p = import_hmd_mix_uv("./msh/square/Tri6_"*string(ndiv)*".msh",
 # "./msh/square/square_"*string(ndiv_p)*".msh",ndiv_p)
-elements,nodes,nodes_p = import_hmd_mix_uv("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh",
-"./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv_p)*".msh",ndiv_p)
+elements,nodes,nodes_p = import_hmd_mix_uv("./msh/Non-uniform/Tri6/"*string(ndiv)*".msh",
+"./msh/Non-uniform/Tri3/"*string(ndiv_p)*".msh",ndiv_p)
 
 nᵤ = length(nodes)
 nₚ = length(nodes_p)
@@ -66,7 +66,7 @@ prescribe!(elements["Γ₂ₚ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁ₚ"],:t=>(x,y,z)->0.0)
 
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
- prescribe!(elements["Ωᵍ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
+prescribe!(elements["Ωᵍ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
 prescribe!(elements["Ωᵍ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
 prescribe!(elements["Ωᵍ"],:∂u∂z=>(x,y,z)->0.0)
 
@@ -96,9 +96,9 @@ push!(nodes,:d=>d)
 δd = dt[nᵤ+1:end]
 # push!(nodes_p,:δd=>δd)
 
-# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
-𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
-
+𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+println(𝐿₂)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])

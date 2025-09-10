@@ -56,10 +56,10 @@ d = d[1:nₚ]
 lines!(nodes.x[[1,3:end...,2]], d[[1,3:end...,2]], color = :blue)
 # lines!(nodes.x, d, color = :blue)
 
-e = d - 𝑢.(t)
+# e = d - 𝑢.(t)
 # e = d - 𝑥
 
-lines!(𝑡, e[[1,3:end...,2]], color = :red)
+# lines!(𝑡, e[[1,3:end...,2]], color = :red)
 
 
 fig

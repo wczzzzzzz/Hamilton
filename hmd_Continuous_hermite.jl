@@ -42,7 +42,6 @@ prescribe!(elements["Γ₄ᵗ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃ᵗ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂ᵗ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃ᵗ"],:𝑃=>(x,y,z)->0.0)
-# prescribe!(elements["Γ₃ᵗ"],:g=>(x,y,z)->𝑢(x,y))
 prescribe!(elements["Ωᵗ"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ωᵗ"],:ρA=>(x,y,z)->ρA)
 prescribe!(elements["Γ₁ᵗ"],:α=>(x,y,z)->α)
@@ -53,25 +52,25 @@ prescribe!(elements["Γ₁ᵗ"],:t=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁ᵗ"],:g=>(x,y,z)->φ(x))
 prescribe!(elements["Ωᵗ"],:u=>(x,y,z)->𝑢(x,y))
 
-# prescribe!(elements["Ωᵗ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
-# prescribe!(elements["Ωᵗ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
-# prescribe!(elements["Ωᵗ"],:∂u∂z=>(x,y,z)->0.0)
+prescribe!(elements["Ωᵗ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
+prescribe!(elements["Ωᵗ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
+prescribe!(elements["Ωᵗ"],:∂u∂z=>(x,y,z)->0.0)
 
-k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-f = zeros(nₚ+nₗ+nₑ)
-kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵅ = zeros(nₚ+nₗ+nₑ)
-kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵝ = zeros(nₚ+nₗ+nₑ)
+# k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# f = zeros(nₚ+nₗ+nₑ)
+# kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵅ = zeros(nₚ+nₗ+nₑ)
+# kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵝ = zeros(nₚ+nₗ+nₑ)
 
-# k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# f = zeros(nₚ + nₗ + nₑ)
-# kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# fᵅ = zeros(nₚ + nₗ + nₑ)
-# kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# fᵝ = zeros(nₚ + nₗ + nₑ)
+k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+f = zeros(nₚ + nₗ + nₑ)
+kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵅ = zeros(nₚ + nₗ + nₑ)
+kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵝ = zeros(nₚ + nₗ + nₑ)
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ωᵗ"]
 𝑓 = ∫vtdΓ=>elements["Γ₁ᵗ"]
@@ -88,46 +87,47 @@ fᵝ = zeros(nₚ+nₗ+nₑ)
 dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 # dt = (k+kᵅ)\(f+fᵅ)
 
-# d = dt[1:nₚ+nₗ+nₑ]
-d = dt[1:nₚ]
+d = dt[1:nₚ+nₗ+nₑ]
+# d = dt[1:nₚ]
 
-push!(nodes,:d=>d)
-# push!(nodes_t,:d=>d)
+# push!(nodes,:d=>d)
+push!(nodes_t,:d=>d)
 
-# 𝐿₂ = log10.(L₂(elements["Ωᵗ"]))
+𝐿₂ = log10.(L₂(elements["Ωᵗ"]))
 # 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵗ"]))
+println(𝐿₂)
 
-fig = Figure()
-ax1 = Axis3(fig[1,1])
-# ax2 = Axis3(fig[1,2])
+# fig = Figure()
+# ax1 = Axis3(fig[1,1])
+# # ax2 = Axis3(fig[1,2])
 
-xs = zeros(nₚ)
-ys = zeros(nₚ)
-# ds = zeros(nₚ + nₗ + nₑ)
-ds = zeros(nₚ)
-es = zeros(nₚ)
-us = zeros(nₚ)
-for (i, node) in enumerate(nodes)
-    x = node.x
-    y = node.y
-    us[i] = 𝑢(x,y)
-end
-for (i,node) in enumerate(nodes)
-    xs[i] = node.x
-    ys[i] = node.y
-    ds[i] = node.d
-    es[i] = ds[i] - us[i]
-end
-face = zeros(nₑ,3)
-for (i,elm) in enumerate(elements["Ω"])
-    face[i,:] .= [x.𝐼 for x in elm.𝓒]
-end
+# xs = zeros(nₚ)
+# ys = zeros(nₚ)
+# # ds = zeros(nₚ + nₗ + nₑ)
+# ds = zeros(nₚ)
+# es = zeros(nₚ)
+# us = zeros(nₚ)
+# for (i, node) in enumerate(nodes)
+#     x = node.x
+#     y = node.y
+#     us[i] = 𝑢(x,y)
+# end
+# for (i,node) in enumerate(nodes)
+#     xs[i] = node.x
+#     ys[i] = node.y
+#     ds[i] = node.d
+#     es[i] = ds[i] - us[i]
+# end
+# face = zeros(nₑ,3)
+# for (i,elm) in enumerate(elements["Ω"])
+#     face[i,:] .= [x.𝐼 for x in elm.𝓒]
+# end
 
-# mesh!(ax,xs,ys,face,color=zs)
-meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
-# meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
-# meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
-fig
+# # mesh!(ax,xs,ys,face,color=zs)
+# meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
+# # meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
+# # meshscatter!(ax2,xs,ys,δds,color=δds,markersize = 0.1)
+# fig
 
 # save("./fig/连续解/锁时间末端Tri_6非均布/t=19.png",fig)
 # save("./fig/连续解/锁时间末端Tri_6均布/t=25.png",fig)
