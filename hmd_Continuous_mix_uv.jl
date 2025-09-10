@@ -1,4 +1,4 @@
-using  ApproxOperator, JuMP, Ipopt, XLSX, LinearAlgebra
+using  ApproxOperator, XLSX, LinearAlgebra
 import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, H₁
 
@@ -96,9 +96,10 @@ push!(nodes,:d=>d)
 δd = dt[nᵤ+1:end]
 # push!(nodes_p,:δd=>δd)
 
-𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
-# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
 println(𝐿₂)
+println(𝐻₁)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])

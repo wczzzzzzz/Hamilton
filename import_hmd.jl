@@ -1,4 +1,4 @@
-
+using ApproxOperator.GmshImport: getPhysicalGroups, getElements, get𝑿ᵢ
 import Gmsh: gmsh
 
 function import_hmd_bar(filename::String)
@@ -268,7 +268,7 @@ function import_hmd_mix_uv(filename1::String, filename2::String, n::Int)
     elements["Γ₂ₚ"] = getElements(nodes_p, entities_p["Γ²"], integrationorder)
     elements["Γ₃ₚ"] = getElements(nodes_p, entities_p["Γ³"], integrationorder)
     elements["Γ₄ₚ"] = getElements(nodes_p, entities_p["Γ⁴"], integrationorder)
-    elements["Ωᵍ"] = getElements(nodes, entities["Ω"], integrationorder_Ωᵍ)
+    elements["Ωᵍₚ"] = getElements(nodes, entities["Ω"], integrationorder_Ωᵍ)
 
     push!(elements["Ω"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
     push!(elements["Γ₁"], :𝝭)
@@ -281,6 +281,7 @@ function import_hmd_mix_uv(filename1::String, filename2::String, n::Int)
     push!(elements["Γ₃ₚ"], :𝝭)
     push!(elements["Γ₄ₚ"], :𝝭)
     push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂𝝭∂z)
+    push!(elements["Ωᵍₚ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂𝝭∂z)
 
     # gmsh.finalize()
     return elements, nodes, nodes_p
