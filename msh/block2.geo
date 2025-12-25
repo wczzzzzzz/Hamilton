@@ -1,7 +1,7 @@
 
-L = 4;
-n = 4;
-a = 1.0;
+L = 1;
+n = 20;
+a = 0.25;
 
 Point(1) = {0, 0, 0, a};
 Point(2) = {L, 0, 0, a};
@@ -42,12 +42,12 @@ Plane Surface(6) = {6};
 Surface Loop(1) = {1, 2, 3, 4, 5, 6};
 Volume(1) = {1};
 
-Physical Surface("Γ¹") = {2};
-Physical Surface("Γ²") = {1, 3, 4, 5, 6};
-Physical Surface("Γ³") = {};
-Physical Surface("Γ⁴") = {};
-Physical Surface("Γ⁵") = {};
-Physical Surface("Γ⁶") = {};
+Physical Surface("Γ¹") = {1};
+Physical Surface("Γ²") = {2};
+Physical Surface("Γ³") = {3};
+Physical Surface("Γ⁴") = {4};
+Physical Surface("Γ⁵") = {5};
+Physical Surface("Γ⁶") = {6};
 Physical Volume("Ω") = {1};
 
 Transfinite Curve{1:12} = n+1;

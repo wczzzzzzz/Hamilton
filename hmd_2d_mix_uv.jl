@@ -10,13 +10,13 @@ using GLMakie
 
 include("import_hmd.jl")
 
-ndiv= 16
-ndiv_p = 16
+ndiv= 32
+ndiv_p = 32
 
 elements,nodes,nodes_p = import_hmd_mix_uv("./msh/square/Tri6_"*string(ndiv)*".msh",
 "./msh/square/square_"*string(ndiv_p)*".msh",ndiv_p)
-# elements,nodes,nodes_p = import_hmd_mix_uv("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh",
-# "./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv_p)*".msh",ndiv_p)
+# elements,nodes,nodes_p = import_hmd_mix_uv("./msh/Non-uniform/Tri6/"*string(ndiv)*".msh",
+# "./msh/Non-uniform/Tri3/"*string(ndiv_p)*".msh",ndiv_p)
 
 nᵤ = length(nodes)
 nₚ = length(nodes_p)
@@ -37,7 +37,7 @@ set∇𝝭!(elements["Ωᵍ"])
 
 ρA = 1.0
 EA = 1.0
-α = 1e15
+α = 1e6
 𝑇(t) = t > 1.0 ? 0.0 : - sin(π*t)
 function 𝑢(x,t)
     if x < t - 1
@@ -111,9 +111,11 @@ d = dt[1:nᵤ]
 δd = dt[nᵤ+1:end]
 
 push!(nodes,:d=>d)
-push!(nodes_p,:δd=>δd)
+# push!(nodes_p,:δd=>δd)
 
 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+println(𝐿₂)
+println(𝐻₁)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
@@ -133,7 +135,7 @@ yp = zeros(nₚ)
 for (i,node) in enumerate(nodes_p)
     xp[i] = node.x
     yp[i] = node.y
-    δds[i] = node.δd
+    # δds[i] = node.δd
 end
 face = zeros(nₑ,6)
 for (i,elm) in enumerate(elements["Ω"])
@@ -150,7 +152,7 @@ fig
 
 # index = [4,8,16,32]
 # XLSX.openxlsx("./excel/hmd_2d_mix_uv.xlsx", mode="rw") do xf
-#     Sheet = xf[1]
+#     Sheet = xf[2]
 #     ind = findfirst(n->n==ndiv,index)+1
 #     Sheet["A"*string(ind)] = log10(4/ndiv)
 #     Sheet["B"*string(ind)] = 𝐻₁

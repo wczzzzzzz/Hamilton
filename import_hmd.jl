@@ -6,17 +6,20 @@ function import_hmd_bar(filename::String)
     gmsh.open(filename)
 
     integrationorder = 2
+    integrationorder_Ωᵍ = 10
     entities = getPhysicalGroups()
     nodes = get𝑿ᵢ()
     elements = Dict{String,Vector{ApproxOperator.AbstractElement}}()
     elements["Ω"] = getElements(nodes, entities["Ω"], integrationorder)
+    elements["Ωᵍ"] = getElements(nodes, entities["Ω"], integrationorder_Ωᵍ)
     elements["Γᵍ"] = getElements(nodes, entities["Γᵍ"], integrationorder)
     elements["Γᵗ"] = getElements(nodes, entities["Γᵗ"], integrationorder)
-    push!(elements["Ω"], :𝝭,:∂𝝭∂x)
-    push!(elements["Γᵍ"], :𝝭)
-    push!(elements["Γᵗ"], :𝝭)
+    # push!(elements["Ω"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    # push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂𝝭∂z)
+    # push!(elements["Γᵍ"], :𝝭)
+    # push!(elements["Γᵗ"], :𝝭)
 
-    gmsh.finalize()
+    # gmsh.finalize()
     return elements, nodes
 end
 
@@ -37,21 +40,21 @@ function import_hmd_Tri3(filename::String)
     elements["Γ₂"] = getElements(nodes, entities["Γ²"], integrationorder)
     elements["Γ₃"] = getElements(nodes, entities["Γ³"], integrationorder)
     elements["Γ₄"] = getElements(nodes, entities["Γ⁴"], integrationorder)
-    elements["Γ₃ₜ"] = Seg2toTri3(elements["Γ₃"],elements["Ω"])
-    elements["Γ₄ₜ"] = Seg2toTri3(elements["Γ₄"],elements["Ω"])
+    # elements["Γ₃ₜ"] = Seg2toTri3(elements["Γ₃"],elements["Ω"])
+    # elements["Γ₄ₜ"] = Seg2toTri3(elements["Γ₄"],elements["Ω"])
     push!(elements["Ω"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
     push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂𝝭∂z)
     push!(elements["Γ₁"], :𝝭)
     push!(elements["Γ₂"], :𝝭)
     push!(elements["Γ₃"], :𝝭)
     push!(elements["Γ₄"], :𝝭)
-    push!(elements["Γ₃ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
-    push!(elements["Γ₄ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    # push!(elements["Γ₃ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    # push!(elements["Γ₄ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
 
     type = PiecewiseParametric{:Bubble,:Tri3}
     # type = PiecewiseParametric{:Bubble,:Quad}
-    elements["Ωᵇ"] = getPiecewiseElements(entities["Ω"], type, integrationorder)
-    push!(elements["Ωᵇ"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
+    # elements["Ωᵇ"] = getPiecewiseElements(entities["Ω"], type, integrationorder)
+    # push!(elements["Ωᵇ"], :𝝭, :∂𝝭∂x, :∂𝝭∂y)
 
 
     # elements["Ω∩Γ₃"] = getBoundaryGradientElement(elements["Γ₃"],elements["Ω"])
@@ -77,17 +80,49 @@ function import_hmd_Tri6(filename::String)
     elements["Γ₂"] = getElements(nodes, entities["Γ²"], integrationorder)
     elements["Γ₃"] = getElements(nodes, entities["Γ³"], integrationorder)
     elements["Γ₄"] = getElements(nodes, entities["Γ⁴"], integrationorder)
-    elements["Γ₃ₜ"] = Seg3toTri6(elements["Γ₃"],elements["Ω"])
-    elements["Γ₄ₜ"] = Seg3toTri6(elements["Γ₄"],elements["Ω"])
+    # elements["Γ₃ₜ"] = Seg3toTri6(elements["Γ₃"],elements["Ω"])
+    # elements["Γ₄ₜ"] = Seg3toTri6(elements["Γ₄"],elements["Ω"])
     push!(elements["Ω"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂²𝝭∂x²,:∂²𝝭∂y²,:∂²𝝭∂x∂y)
     push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂²𝝭∂x²,:∂²𝝭∂y²,:∂²𝝭∂x∂y)
     push!(elements["Γ₁"], :𝝭)
     push!(elements["Γ₂"], :𝝭)
     push!(elements["Γ₃"], :𝝭)
     push!(elements["Γ₄"], :𝝭)
-    push!(elements["Γ₃ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
-    push!(elements["Γ₄ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    # push!(elements["Γ₃ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    # push!(elements["Γ₄ₜ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
 
+    # gmsh.finalize()
+    return elements, nodes
+end
+
+import Gmsh: gmsh
+
+function import_hmd_3d(filename::String)
+    gmsh.initialize()
+    gmsh.open(filename)
+
+    integrationorder = 2
+    integrationorder_Ωᵍ = 10
+    entities = getPhysicalGroups()
+    nodes = get𝑿ᵢ()
+    elements = Dict{String,Vector{ApproxOperator.AbstractElement}}()
+    elements["Ω"] = getElements(nodes, entities["Ω"], integrationorder)
+    elements["Ωᵍ"] = getElements(nodes, entities["Ω"], integrationorder_Ωᵍ)
+    elements["Γ₁"] = getElements(nodes, entities["Γ¹"], integrationorder)
+    elements["Γ₂"] = getElements(nodes, entities["Γ²"], integrationorder)
+    elements["Γ₃"] = getElements(nodes, entities["Γ³"], integrationorder)
+    elements["Γ₄"] = getElements(nodes, entities["Γ⁴"], integrationorder)
+    elements["Γ₅"] = getElements(nodes, entities["Γ⁵"], integrationorder)
+    elements["Γ₆"] = getElements(nodes, entities["Γ⁶"], integrationorder)
+    push!(elements["Ω"], :𝝭,:∂𝝭∂x,:∂𝝭∂y)
+    push!(elements["Ωᵍ"], :𝝭,:∂𝝭∂x,:∂𝝭∂y,:∂𝝭∂z)
+    push!(elements["Γ₁"], :𝝭)
+    push!(elements["Γ₂"], :𝝭)
+    push!(elements["Γ₃"], :𝝭)
+    push!(elements["Γ₄"], :𝝭)
+    push!(elements["Γ₅"], :𝝭)
+    push!(elements["Γ₆"], :𝝭)
+    
     # gmsh.finalize()
     return elements, nodes
 end

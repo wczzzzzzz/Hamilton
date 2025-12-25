@@ -8,13 +8,13 @@ import Gmsh: gmsh
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 16
-ndiv_p = 16
+ndiv= 32
+ndiv_p = 32
 
-# elements,nodes,nodes_p = import_hmd_mix_uv("./msh/square/Tri6_"*string(ndiv)*".msh",
-# "./msh/square/square_"*string(ndiv_p)*".msh",ndiv_p)
-elements,nodes,nodes_p = import_hmd_mix_uv("./msh/Non-uniform/Tri6/"*string(ndiv)*".msh",
-"./msh/Non-uniform/Tri3/"*string(ndiv_p)*".msh",ndiv_p)
+elements,nodes,nodes_p = import_hmd_mix_uv("./msh/square/Tri6_"*string(ndiv)*".msh",
+"./msh/square/square_"*string(ndiv_p)*".msh",ndiv_p)
+# elements,nodes,nodes_p = import_hmd_mix_uv("./msh/Non-uniform/Tri6/"*string(ndiv)*".msh",
+# "./msh/Non-uniform/Tri3/"*string(ndiv_p)*".msh",ndiv_p)
 
 nᵤ = length(nodes)
 nₚ = length(nodes_p)

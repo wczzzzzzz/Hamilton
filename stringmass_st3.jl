@@ -48,9 +48,14 @@ d = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
 δd = d[nₚ+1:2*nₚ]
 d = d[1:nₚ]
 
+# push!(nodes,:d=>d)
+# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+# println(𝐿₂)
+# println(𝐻₁)
+
 e = d - 𝑢.(t)
-lines!(t, e, color = :red)
-# lines!(t, d, color = :blue)
+# lines!(t, e, color = :red)
+lines!(t, d, color = :blue)
 # lines!(t, δd, color = :red)
 
 # invisible_line = lines!(ax, [0, 0], [0, 0], color = :white, label="Δt=0.005", visible=false)

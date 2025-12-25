@@ -14,12 +14,12 @@ using LinearAlgebra
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 4
-# elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+ndiv= 32
+elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/局部加密/C=0.4/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
-elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/RefineMesh_1.0/"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3/"*string(ndiv)*".msh");uniform = "uniform"
 
 nₚ = length(nodes)
 nₑ = length(elements["Ωᵗ"])
@@ -48,22 +48,22 @@ function 𝑢(x,t)
         return (1-cos(π*(t - x)))/π
     end
 end
-# function ∂u∂t(x, t)
-#     if x < t - 1 || x > t
-#         return 0.0
-#     else
-#         return sin(π * (t - x))
-#     end
-# end
-# function ∂u∂x(x, t)
-#     if x < t - 1
-#         return 0.0
-#     elseif x > t
-#         return 0.0
-#     else
-#         return -sin(π*(t - x))
-#     end
-# end
+function ∂u∂t(x, t)
+    if x < t - 1 || x > t
+        return 0.0
+    else
+        return sin(π * (t - x))
+    end
+end
+function ∂u∂x(x, t)
+    if x < t - 1
+        return 0.0
+    elseif x > t
+        return 0.0
+    else
+        return -sin(π*(t - x))
+    end
+end
 prescribe!(elements["Ωᵗ"],:EA=>(x,y,z)->EA)
 prescribe!(elements["Ωᵗ"],:ρA=>(x,y,z)->ρA)
 prescribe!(elements["Ωᵗ"],:u=>(x,y,z)->𝑢(x,y))
@@ -78,9 +78,9 @@ prescribe!(elements["Γ₃ᵗ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₄ᵗ"],:t=>(x,y,z)->-𝑇(y))
 # prescribe!(elements["Ωᵗ"],:c=>(x,y,z)->c)
 
-# prescribe!(elements["Ωᵗ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
-# prescribe!(elements["Ωᵗ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
-# prescribe!(elements["Ωᵗ"],:∂u∂z=>(x,y,z)->0.0)
+prescribe!(elements["Ωᵗ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
+prescribe!(elements["Ωᵗ"],:∂u∂y=>(x,y,z)->∂u∂t(x,y))
+prescribe!(elements["Ωᵗ"],:∂u∂z=>(x,y,z)->0.0)
 
 𝑎 = ∫∫∇q∇pdxdt=>elements["Ωᵗ"]
 𝑓 = ∫vtdΓ=>elements["Γ₄ᵗ"]
@@ -88,22 +88,22 @@ prescribe!(elements["Γ₄ᵗ"],:t=>(x,y,z)->-𝑇(y))
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁ᵗ"]∪elements["Γ₂ᵗ"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃ᵗ"]∪elements["Γ₂ᵗ"]
 
-# k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-# kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-# f = zeros(nₚ+nₗ+nₑ)
-# kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-# fᵅ = zeros(nₚ+nₗ+nₑ)
-# kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-# fᵝ = zeros(nₚ+nₗ+nₑ)
-# kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+f = zeros(nₚ+nₗ+nₑ)
+kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+fᵅ = zeros(nₚ+nₗ+nₑ)
+kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+fᵝ = zeros(nₚ+nₗ+nₑ)
+kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
 
-k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-f = zeros(nₚ + nₗ + nₑ)
-kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-fᵅ = zeros(nₚ + nₗ + nₑ)
-kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-fᵝ = zeros(nₚ + nₗ + nₑ)
+# k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+# kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+# f = zeros(nₚ + nₗ + nₑ)
+# kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+# fᵅ = zeros(nₚ + nₗ + nₑ)
+# kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+# fᵝ = zeros(nₚ + nₗ + nₑ)
 
 𝑎(k)
 𝑓(f)
@@ -120,15 +120,14 @@ fᵝ = zeros(nₚ + nₗ + nₑ)
 dt = ([k+kᵅ -k;-k kᵝ])\[fᵅ;-f+fᵝ]
 
 
-# d = dt[1:nₚ+nₗ+nₑ]
-d = dt[1:nₚ]
+d = dt[1:nₚ+nₗ+nₑ]
+# d = dt[1:nₚ]
 # δd = dt[nₚ+nₗ+nₑ+1:end]
 
 push!(nodes,:d=>d,:δd=>δd)
-
-# push!(nodes_t,:d=>d,:δd=>δd)
+push!(nodes_t,:d=>d,:δd=>δd)
 # 𝐿₂ = log10.(L₂(elements["Ωᵗ"]))
-# 𝐻₁, 𝐿₂ = log10.(H₁(elements["Ωᵗ"]))
+𝐻₁, 𝐿₂ = log10.(H₁(elements["Ωᵗ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -150,9 +149,9 @@ push!(nodes,:d=>d,:δd=>δd)
 
 # index = [10,20,40,80]
 # index = [0.4,0.2,0.1,0.05]
-# index = [8,16,32,64]
+# index = [4,8,16,32]
 # XLSX.openxlsx("./excel/hermite.xlsx", mode="rw") do xf
-#     Sheet = xf[3]
+#     Sheet = xf[4]
 #     ind = findfirst(n->n==ndiv,index)+1
 #     Sheet["A"*string(ind)] = log10(4/ndiv)
 #     # Sheet["A"*string(ind)] = log10(nₚ)

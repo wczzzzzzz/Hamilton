@@ -3,12 +3,12 @@ using ApproxOperator, GLMakie
 
 import Gmsh: gmsh
 
-ndiv = 5
+# ndiv = 4
 gmsh.initialize()
-gmsh.open("./msh/Non-uniform/619/Tri6_2.0_"*string(ndiv)*".msh")
+# gmsh.open("./msh/Non-uniform/Tri3/"*string(ndiv)*".msh")
 # gmsh.open("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh")
 # gmsh.open("./msh/Non-uniform/局部加密/Tri3_"*string(ndiv)*".msh")
-# gmsh.open("./msh/b=2/Tri3反向"*string(ndiv)*".msh")
+gmsh.open("./msh/BiRefine/2d/impact_4_refined_r13.msh")
 # gmsh.open("./msh/square/square_"*string(ndiv)*".msh")
 # gmsh.open("./msh/b=2/Tri3非均布"*string(ndiv)*".msh")
 # gmsh.open("./msh/MorleysAcuteSkewPlate_"*string(ndiv)*".msh")
@@ -44,7 +44,7 @@ z = 0
 ps = Point3f.(x,y,z)
 scatter!(ps, 
     marker=:circle,
-    markersize = 8.0,
+    markersize = 5.0,
     color = :black
 )
 
@@ -73,6 +73,7 @@ end
 # save("./fig/三角形节点网格/Tri6非均布_Rf_1.0_3"*string(ndiv)*".png",f, px_per_unit = 2.0)
 
 # save("./fig/619测试/Tri6_网格图非均布2.0_"*string(ndiv)*".png",f)
+# save("./fig/三角形节点网格/impact_4_refined_r13.png",f)
 
 
 

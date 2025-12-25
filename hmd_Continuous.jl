@@ -8,31 +8,31 @@ import Gmsh: gmsh
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 4
-# elements,nodes = import_hmd_Tri3("./msh/square/618/0.5_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri6("./msh/Non-uniform/618/Tri6_2.0_"*string(ndiv)*".msh")
-
+ndiv= 16
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri6("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
-elements,nodes = import_hmd_Tri6("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/square/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/2.5_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh");uniform = "uniform"
+
+# elements,nodes = import_hmd_Tri3("./msh/BiRefine/Continuous/square_4_r3_refined.msh");uniform = "uniform"
+
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
-set∇²𝝭!(elements["Ω"])
+# set∇²𝝭!(elements["Ω"])
 set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γ₁"])
 set𝝭!(elements["Γ₂"])
 set𝝭!(elements["Γ₃"])
 set𝝭!(elements["Γ₄"])
-set∇𝝭!(elements["Γ₃ₜ"])
-set∇𝝭!(elements["Γ₄ₜ"])
+# set∇𝝭!(elements["Γ₃ₜ"])
+# set∇𝝭!(elements["Γ₄ₜ"])
 set∇𝝭!(elements["Ωᵍ"])
 
-α = 1e10
-β = 1e2
+α = 1e6
+β = 1e6
 # ρA = 1.0*1.0/289.0
 ρA = 1.0
 EA = 1.0
@@ -59,10 +59,10 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₄"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:t=>(x,y,z)->0.0)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->φ(x))
-prescribe!(elements["Γ₃ₜ"],:EA=>(x,y,z)->EA)
-prescribe!(elements["Γ₃ₜ"],:ρA=>(x,y,z)->ρA)
-prescribe!(elements["Γ₃ₜ"],:α=>(x,y,z)->α)
-prescribe!(elements["Γ₃ₜ"],:β=>(x,y,z)->β)
+# prescribe!(elements["Γ₃ₜ"],:EA=>(x,y,z)->EA)
+# prescribe!(elements["Γ₃ₜ"],:ρA=>(x,y,z)->ρA)
+# prescribe!(elements["Γ₃ₜ"],:α=>(x,y,z)->α)
+# prescribe!(elements["Γ₃ₜ"],:β=>(x,y,z)->β)
 prescribe!(elements["Ω"],:c=>(x,y,z)->c)
 
 prescribe!(elements["Ωᵍ"],:u=>(x,y,z)->𝑢(x,y))
@@ -87,21 +87,21 @@ kᵞ = zeros(nₚ,nₚ)
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃"]∪elements["Γ₄"]∪elements["Γ₂"]
 𝑎ᵞ = [
     stabilization_bar_LSG=>elements["Ω"],
-    stabilization_bar_LSG_Γ=>elements["Γ₃ₜ"],
+    # stabilization_bar_LSG_Γ=>elements["Γ₃ₜ"],
 ]
 
 𝑎ᵝ(kᵝ,fᵝ)
 𝑎ᵅ(kᵅ,fᵅ)
 𝑓(f)
 𝑎(k)
-𝑎ᵞ(kᵞ)
+# 𝑎ᵞ(kᵞ)
 
-# dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
-dt = [k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ]\[fᵅ;-f+fᵝ]
+dt = [k+kᵅ -k;-k kᵝ]\[fᵅ;-f+fᵝ]
+# dt = [k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ]\[fᵅ;-f+fᵝ]
 # dt = (k+kᵅ)\(f+fᵅ)
-prob = LinearProblem([k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ], [fᵅ;-f+fᵝ])
-sol = solve(prob)
-dt = sol.u
+# prob = LinearProblem([k+kᵅ+kᵞ -k-kᵞ;-k-kᵞ kᵝ+kᵞ], [fᵅ;-f+fᵝ])
+# sol = solve(prob)
+# dt = sol.u
 
 d = dt[1:nₚ]
 
@@ -116,8 +116,8 @@ push!(nodes,:δd=>δd)
 # println(e3)
 
 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
-# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
-println(𝐿₂)
+𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+println(𝐻₁,𝐿₂)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
@@ -127,7 +127,7 @@ xs = zeros(nₚ)
 ys = zeros(nₚ)
 zs = zeros(nₚ)
 ds = zeros(nₚ)
-δds = zeros(nₚ)
+# δds = zeros(nₚ)
 # es = zeros(nₚ)
 us = zeros(nₚ)
 # qs = zeros(nₚ)
@@ -143,10 +143,10 @@ for (i,node) in enumerate(nodes)
     xs[i] = node.x
     ys[i] = node.y
     ds[i] = node.d
-    δds[i] = node.δd
+    # δds[i] = node.δd
     # es[i] = ds[i] - us[i]
 end
-face = zeros(nₑ,6)
+face = zeros(nₑ,3)
 for (i,elm) in enumerate(elements["Ω"])
     face[i,:] .= [x.𝐼 for x in elm.𝓒]
 end
@@ -167,12 +167,12 @@ fig
 
 # index = [4,8,16,32]
 # # index = [5,10,20,40]
-# XLSX.openxlsx("./excel/hmd_Continuous(2).xlsx", mode="rw") do xf
-#     Sheet = xf[5]
+# XLSX.openxlsx("./excel/hmd_Continuous_BiRefine.xlsx", mode="rw") do xf
+#     Sheet = xf[1]
 #     ind = findfirst(n->n==ndiv,index)+1
 #     Sheet["A"*string(ind)] = log10(4/ndiv)
 #     # Sheet["A"*string(ind)] = log10(nₚ)
-#     # Sheet["B"*string(ind)] = 𝐻₁
+#     Sheet["B"*string(ind)] = 𝐻₁
 #     Sheet["C"*string(ind)] = 𝐿₂
 # end
 
