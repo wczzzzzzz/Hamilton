@@ -15,7 +15,7 @@ include("import_hmd.jl")
 ndiv= 32
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/618/Tri6_0.5_"*string(ndiv)*".msh")
-# elements,nodes = import_hmd_Tri6("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri6("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/局部加密/C=0.2/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6/"*string(ndiv)*".msh");uniform = "uniform"
@@ -23,7 +23,7 @@ ndiv= 32
 # elements,nodes = import_hmd_Tri3("./msh/square/Tri3反向"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_bar("./msh/bar/bar_"*string(ndiv)*".msh")
 
-elements,nodes = import_hmd_Tri3("./msh/BiRefine/2d/impact_4_refined_r13.msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/BiRefine/2d/impact_4_refined_r13.msh");uniform = "uniform"
 
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -175,17 +175,17 @@ println(𝐻₁,𝐿₂)
 #     end
 # end
 
-index = [4,8,16,32]
-# index = [0.4,0.3,0.2,0.1]
-# index = [0,1,2,3]
-XLSX.openxlsx("./excel/hmd_BiRefine.xlsx", mode="rw") do xf
-    Sheet = xf[3]
-    ind = findfirst(n->n==ndiv,index)+1
-    Sheet["A"*string(ind)] = log10(4/ndiv)
-    # Sheet["A"*string(ind)] = log10(nₚ)
-    Sheet["B"*string(ind)] = 𝐻₁
-    Sheet["C"*string(ind)] = 𝐿₂
-end
+# index = [4,8,16,32]
+# # index = [0.4,0.3,0.2,0.1]
+# # index = [0,1,2,3]
+# XLSX.openxlsx("./excel/hmd_BiRefine.xlsx", mode="rw") do xf
+#     Sheet = xf[3]
+#     ind = findfirst(n->n==ndiv,index)+1
+#     Sheet["A"*string(ind)] = log10(4/ndiv)
+#     # Sheet["A"*string(ind)] = log10(nₚ)
+#     Sheet["B"*string(ind)] = 𝐻₁
+#     Sheet["C"*string(ind)] = 𝐿₂
+# end
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])

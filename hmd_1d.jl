@@ -6,9 +6,9 @@ import ApproxOperator.Heat: H₁, L₂
 
 include("import_hmd.jl")
 
-ndiv= 128
-# elements,nodes = import_hmd_bar("./msh/bar/L=8/bar_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_bar("./msh/bar/L=8/bar_un_"*string(ndiv)*".msh")
+ndiv= 32
+elements,nodes = import_hmd_bar("./msh/bar/L=8/bar_"*string(ndiv)*".msh")
+# elements,nodes = import_hmd_bar("./msh/bar/L=8/bar_un_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
 
@@ -17,7 +17,7 @@ set∇𝝭!(elements["Ω"])
 set𝝭!(elements["Γᵍ"])
 set∇𝝭!(elements["Ωᵍ"])
 
-kᶜ = 3.0
+kᶜ = 50.0
 m = 1.0
 q̇₀ = 1.0
 q₀ = 1.0

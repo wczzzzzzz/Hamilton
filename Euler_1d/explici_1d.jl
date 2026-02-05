@@ -47,10 +47,10 @@ xlims!(ax, 0, 8)
 
 fig
 
-d = q[1:nₜ]
+# d = q[1:nₜ]
 
-𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
-println(𝐿₂)
+# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# println(𝐿₂)
 
 
 # save("./fig/一维/Explicit_1d.png",fig)
