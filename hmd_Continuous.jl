@@ -1,22 +1,23 @@
 using  ApproxOperator, XLSX, LinearAlgebra, LinearSolve
 import ApproxOperator.Hamilton: ∫∫∇q∇pdxdt, stabilization_bar_LSG, stabilization_bar_LSG_Γ
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
-
+using  BiRefine
+using WriteVTK
 using GLMakie
 import Gmsh: gmsh
 
 include("import_hmd.jl")
 # include("import_hmd_test.jl")
 
-ndiv= 16
+# ndiv= 16
 # elements,nodes = import_hmd_Tri3("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh")
-elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+# elements,nodes = import_hmd_Tri3("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6/"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes = import_hmd_Tri6("./msh/square/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/拉伸压缩/2.5_"*string(ndiv)*".msh");uniform = "nonuniform"
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/RefineMesh_1.0/Tri6_"*string(ndiv)*".msh");uniform = "uniform"
 
-# elements,nodes = import_hmd_Tri3("./msh/BiRefine/Continuous/square_4_r3_refined.msh");uniform = "uniform"
+elements,nodes = import_hmd_Tri3("./msh/BiRefine/Continuous/square_4_r3_refined.msh");uniform = "uniform"
 
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
@@ -115,9 +116,9 @@ push!(nodes,:δd=>δd)
 # println(ed)
 # println(e3)
 
-𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
-𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
-println(𝐻₁,𝐿₂)
+# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+# println(𝐻₁,𝐿₂)
 
 fig = Figure()
 ax1 = Axis3(fig[1,1])
@@ -183,7 +184,8 @@ fig
 #     points[3,i] = node.d
 # end
 # cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP,[x.𝐼 for x in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/hmd_Continuous/uniform_"*string(ndiv)*".vtu",points,cells) do vtk
+# # vtk_grid("./vtk/hmd_Continuous/uniform_"*string(ndiv)*".vtu",points,cells) do vtk
+# vtk_grid("./vtk/hmd_Continuous/BiRefine_4.vtu",points,cells) do vtk
 #     vtk["d"] = [node.d for node in nodes]
 # end
 

@@ -13,6 +13,7 @@ include("import_hmd.jl")
 # include("importmsh.jl")
 
 ndiv= 32
+
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes = import_hmd_Tri6("./msh/Non-uniform/618/Tri6_0.5_"*string(ndiv)*".msh")
 elements,nodes = import_hmd_Tri6("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
@@ -86,7 +87,7 @@ prescribe!(elements["Γ₃"],:α=>(x,y,z)->α)
 prescribe!(elements["Γ₁"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃"],:g=>(x,y,z)->0.0)
-prescribe!(elements["Γ₄"],:t=>(x,y,z)->-𝑇(y))
+prescribe!(elements["Γ₄"],:t=>(x,y,z)->𝑇(y))
 # prescribe!(elements["Γ₃ₜ"],:EA=>(x,y,z)->EA)
 # prescribe!(elements["Γ₄ₜ"],:EA=>(x,y,z)->EA)
 # prescribe!(elements["Γ₃ₜ"],:ρA=>(x,y,z)->ρA)
@@ -153,9 +154,9 @@ push!(nodes,:d=>d,:δd=>δd)
 # println(e3)
 # println(e4)
 
-𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
-𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
-println(𝐻₁,𝐿₂)
+# 𝐿₂ = log10.(L₂(elements["Ωᵍ"]))
+# 𝐻₁,𝐿₂ = log10.(H₁(elements["Ωᵍ"]))
+# println(𝐻₁,𝐿₂)
 
 # for i in 1:nₚ
 #     x = nodes.x[i]

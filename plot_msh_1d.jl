@@ -1,10 +1,10 @@
 using ApproxOperator, GLMakie
-
+import ApproxOperator.GmshImport: getPhysicalGroups, get𝑿ᵢ, getElements
 import Gmsh: gmsh
 
 gmsh.initialize()
 # gmsh.open("./msh/bar/L=8/bar_128.msh")
-gmsh.open("./msh/bar/L=8/bar_un_16.msh")
+gmsh.open("./msh/bar/L=8/bar_un_256.msh")
 
 entities = getPhysicalGroups()
 nodes = get𝑿ᵢ()
@@ -33,7 +33,7 @@ x_nodes = [node.x for node in nodes]
 y_nodes = [node.y for node in nodes]
 scatter!(ax, x_nodes, y_nodes,
     marker = :circle,
-    markersize = 5.0,
+    markersize = 4.0,
     color = :black
 )
 
@@ -41,7 +41,7 @@ for elm in elements["Ω"]
     x = [node.x for node in elm.𝓒]
     y = [node.y for node in elm.𝓒]
     lines!(ax, x, y,
-        linewidth = 1.0,
+        linewidth = 2.0,
         color = :blue
     )
 end
@@ -51,11 +51,11 @@ for elm in elements["∂Ω"]
     y = [node.y for node in elm.𝓒]
     scatter!(ax, x, y,
         marker = :star,
-        markersize = 4.0,
-        color = :red
+        markersize = 2.0,
+        color = :black
     )
 end
 
 display(f)
-# save("./fig/弹簧小车网格图/un_n=16.png",f)
+# save("./fig/弹簧小车网格图/un_n=256.png",f)
 # save("./fig/弹簧小车网格图/n=128.png",f)

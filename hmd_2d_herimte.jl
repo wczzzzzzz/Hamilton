@@ -14,11 +14,11 @@ using LinearAlgebra
 include("import_hmd.jl")
 # include("importmsh.jl")
 
-ndiv= 32
-elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
+ndiv= 0.04
+# elements,nodes,nodes_t = import_hermite("./msh/square/square_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri6_"*string(ndiv)*".msh")
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
-# elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/局部加密/C=0.4/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
+elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/局部加密/C=0.2/Tri3_"*string(ndiv)*".msh");uniform = "uniform"
 # elements,nodes,nodes_t = import_hermite("./msh/Non-uniform/Tri3/"*string(ndiv)*".msh");uniform = "uniform"
 
 nₚ = length(nodes)
@@ -75,7 +75,7 @@ prescribe!(elements["Γ₁ᵗ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₂ᵗ"],:g=>(x,y,z)->0.0)
 prescribe!(elements["Γ₃ᵗ"],:g=>(x,y,z)->0.0)
 # prescribe!(elements["Γ₃ᵗ"],:g=>(x,y,z)->𝑢(x,y))
-prescribe!(elements["Γ₄ᵗ"],:t=>(x,y,z)->-𝑇(y))
+prescribe!(elements["Γ₄ᵗ"],:t=>(x,y,z)->𝑇(y))
 # prescribe!(elements["Ωᵗ"],:c=>(x,y,z)->c)
 
 prescribe!(elements["Ωᵗ"],:∂u∂x=>(x,y,z)->∂u∂x(x,y))
@@ -88,22 +88,22 @@ prescribe!(elements["Ωᵗ"],:∂u∂z=>(x,y,z)->0.0)
 𝑎ᵅ = ∫vgdΓ=>elements["Γ₁ᵗ"]∪elements["Γ₂ᵗ"]
 𝑎ᵝ = ∫vgdΓ=>elements["Γ₃ᵗ"]∪elements["Γ₂ᵗ"]
 
-k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-f = zeros(nₚ+nₗ+nₑ)
-kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵅ = zeros(nₚ+nₗ+nₑ)
-kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
-fᵝ = zeros(nₚ+nₗ+nₑ)
-kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# k = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# kˢ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# f = zeros(nₚ+nₗ+nₑ)
+# kᵅ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵅ = zeros(nₚ+nₗ+nₑ)
+# kᵝ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
+# fᵝ = zeros(nₚ+nₗ+nₑ)
+# kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
 
-# k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# f = zeros(nₚ + nₗ + nₑ)
-# kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# fᵅ = zeros(nₚ + nₗ + nₑ)
-# kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
-# fᵝ = zeros(nₚ + nₗ + nₑ)
+k = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+kˢ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+f = zeros(nₚ + nₗ + nₑ)
+kᵅ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵅ = zeros(nₚ + nₗ + nₑ)
+kᵝ = spzeros(nₚ + nₗ + nₑ, nₚ + nₗ + nₑ)
+fᵝ = zeros(nₚ + nₗ + nₑ)
 
 𝑎(k)
 𝑓(f)
@@ -120,14 +120,14 @@ kᵗ = zeros(nₚ+nₗ+nₑ,nₚ+nₗ+nₑ)
 dt = ([k+kᵅ -k;-k kᵝ])\[fᵅ;-f+fᵝ]
 
 
-d = dt[1:nₚ+nₗ+nₑ]
-# d = dt[1:nₚ]
+# d = dt[1:nₚ+nₗ+nₑ]
+d = dt[1:nₚ]
 # δd = dt[nₚ+nₗ+nₑ+1:end]
 
-push!(nodes,:d=>d,:δd=>δd)
-push!(nodes_t,:d=>d,:δd=>δd)
-# 𝐿₂ = log10.(L₂(elements["Ωᵗ"]))
-𝐻₁, 𝐿₂ = log10.(H₁(elements["Ωᵗ"]))
+# push!(nodes,:d=>d,:δd=>δd)
+push!(nodes_t,:d=>d)
+# # 𝐿₂ = log10.(L₂(elements["Ωᵗ"]))
+# 𝐻₁, 𝐿₂ = log10.(H₁(elements["Ωᵗ"]))
 
 # for i in 1:nₚ
 #     x = nodes.x[i]
@@ -159,40 +159,40 @@ push!(nodes_t,:d=>d,:δd=>δd)
 #     Sheet["C"*string(ind)] = 𝐿₂
 # end
 
-fig = Figure()
-ax1 = Axis3(fig[1,1])
-# ax2 = Axis3(fig[1,2])
+# fig = Figure()
+# ax1 = Axis3(fig[1,1])
+# # ax2 = Axis3(fig[1,2])
 
-xs = zeros(nₚ)
-ys = zeros(nₚ)
-ds = zeros(nₚ)
-# es = zeros(nₚ)
-# us = zeros(nₚ)
+# xs = zeros(nₚ)
+# ys = zeros(nₚ)
+# ds = zeros(nₚ)
+# # es = zeros(nₚ)
+# # us = zeros(nₚ)
 
-for (i, node) in enumerate(nodes)
-    x = node.x
-    y = node.y
-    # us[i] = 𝑢(x,y)
-end
+# for (i, node) in enumerate(nodes)
+#     x = node.x
+#     y = node.y
+#     # us[i] = 𝑢(x,y)
+# end
 
-for (i,node) in enumerate(nodes)
-    xs[i] = node.x
-    ys[i] = node.y
-    ds[i] = node.d
+# for (i,node) in enumerate(nodes)
+#     xs[i] = node.x
+#     ys[i] = node.y
+#     ds[i] = node.d
 
-    # δds[i] = node.δd
-    # es[i] = ds[i] - us[i]
-end
-face = zeros(nₑ,3)
-for (i,elm) in enumerate(elements["Ω"])
-    face[i,:] .= [x.𝐼 for x in elm.𝓒]
-end
+#     # δds[i] = node.δd
+#     # es[i] = ds[i] - us[i]
+# end
+# face = zeros(nₑ,3)
+# for (i,elm) in enumerate(elements["Ω"])
+#     face[i,:] .= [x.𝐼 for x in elm.𝓒]
+# end
 
-# # mesh!(ax,xs,ys,zs,face,color=ds)
-# # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
-meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
-# meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
-fig
+# # # mesh!(ax,xs,ys,zs,face,color=ds)
+# # # meshscatter!(ax,xs,ys,zs,color=zs,markersize = 0.1)
+# meshscatter!(ax1,xs,ys,ds,color=ds,markersize = 0.06)
+# # meshscatter!(ax1,xs,ys,es,color=es,markersize = 0.06)
+# fig
 
 # save("./fig/hmd_2d/四边形节点/t=100.png",fig)
 # save("./fig/hmd_2d/局部加密C=0.2/hermite/c=0.02.png",fig)
@@ -217,17 +217,17 @@ fig
 # println(fₜ)
 # println(fₛ)
 
-# xs = [node.x for node in nodes]'
-# ys = [node.y for node in nodes]'
-# zs = [node.z for node in nodes]'
-# points = [xs; ys; zs]
-# cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
-# vtk_grid("./vtk/hmd_2d_hermite/error/uniform_"*string(ndiv), points, cells) do vtk
-#     # vtk["fₓ"] = fₓ
-#     # vtk["fₜ"] = fₜ
-#     # vtk["fₓₓ"] = fₓₓ
-#     # vtk["fₜₜ"] = fₜₜ
-#     # vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
-#     vtk["误差"] = es
-# end
+xs = [node.x for node in nodes]'
+ys = [node.y for node in nodes]'
+zs = [node.z for node in nodes]'
+points = [xs; ys; zs]
+cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE_STRIP, [xᵢ.𝐼 for xᵢ in elm.𝓒]) for elm in elements["Ω"]]
+vtk_grid("./vtk/hmd_2d_hermite/non-uniform_C=0.2_c_"*string(ndiv), points, cells) do vtk
+    # vtk["fₓ"] = fₓ
+    # vtk["fₜ"] = fₜ
+    # vtk["fₓₓ"] = fₓₓ
+    # vtk["fₜₜ"] = fₜₜ
+    # vtk["fₓₓ/fₜₜ"] = fₓₓ./fₜₜ
+    vtk["位移"] = d
+end
 
