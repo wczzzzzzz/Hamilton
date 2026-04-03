@@ -4,7 +4,7 @@ import ApproxOperator.Heat: H₁, L₂
 
 include("import_hmd.jl")
 
-ndiv = 32
+ndiv = 64
 elements, nodes = import_hmd_bar("./msh/bar/L=8/bar_"*string(ndiv)*".msh")
 nₚ = length(nodes)
 nₑ = length(elements["Ω"])
