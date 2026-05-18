@@ -22,7 +22,7 @@ c = (EA/ρA)^0.5
 
 integrationorder = 2
 integrationorder_Ωᵍ = 10
-ndiv= 16
+ndiv= 32
 filename = "square_"*string(ndiv)
 gmsh.initialize()
 gmsh.open("./msh/square/"*filename*".msh")
@@ -76,19 +76,19 @@ set𝝭!(elements_Γ⁴)
 kᵝ = zeros(nₚ,nₚ)
 fᵝ = zeros(nₚ)
 elements_Γ¹ = getElements(nodes, entities["Γ¹"], integrationorder)
-elements_Γ² = getElements(nodes, entities["Γ²"], integrationorder)
+#elements_Γ² = getElements(nodes, entities["Γ²"], integrationorder)
 #elements_Γ³ = getElements(nodes, entities["Γ³"], integrationorder)
-elements_Γ⁴ = getElements(nodes, entities["Γ⁴"], integrationorder)
+#elements_Γ⁴ = getElements(nodes, entities["Γ⁴"], integrationorder)
 prescribe!(elements_Γ¹,:α=>α,:g=>0.0)
-prescribe!(elements_Γ²,:α=>α,:g=>0.0)
+#prescribe!(elements_Γ²,:α=>α,:g=>0.0)
 #prescribe!(elements_Γ³,:α=>α,:g=>(x,y,z)->(-π*a*c/l)*sin(π*a*c*y/l)*sin(π*x/l))
-prescribe!(elements_Γ⁴,:α=>α,:g=>0.0)
+#prescribe!(elements_Γ⁴,:α=>α,:g=>0.0)
 set𝝭!(elements_Γ¹)
-set𝝭!(elements_Γ²)
+#set𝝭!(elements_Γ²)
 #set𝝭!(elements_Γ³)
-set𝝭!(elements_Γ⁴)
+#set𝝭!(elements_Γ⁴)
 #𝑎ᵝ = ∫vgdΓ=>elements_Γ¹∪elements_Γ²∪elements_Γ³∪elements_Γ⁴
-𝑎ᵝ = ∫vgdΓ=>elements_Γ¹∪elements_Γ²∪elements_Γ⁴
+𝑎ᵝ = ∫vgdΓ=>elements_Γ¹
 𝑎ᵝ(kᵝ,fᵝ)
 
 dt = [kᵘᵘ+kᵅ kᵘᵛ;kᵛᵘ kᵛᵛ+kᵝ]\[fᵅ;fᵝ]
