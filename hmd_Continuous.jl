@@ -1,5 +1,5 @@
 using  ApproxOperator, XLSX, LinearAlgebra, LinearSolve
-import ApproxOperator.WeightedResidual: ∫kNṄdxdt, ∫kNNdxdt, ∫NṄdxdt, ∫c²B₁B₁dxdt
+import ApproxOperator.WeightedResidual: ∫∫kNṄdxdt, ∫∫kNNdxdt, ∫∫NṄdxdt, ∫∫c²B₁B₁dxdt
 import ApproxOperator.Heat: ∫vtdΓ, ∫vgdΓ, ∫vbdΩ, L₂, ∫∫∇v∇udxdy, H₁
 using ApproxOperator.GmshImport: getPhysicalGroups, getElements, get𝑿ᵢ
 using WriteVTK
@@ -46,10 +46,10 @@ kᵛᵘ = zeros(nₚ,nₚ)
 elements = getElements(nodes, entities["Ω"], integrationorder)
 prescribe!(elements,:k=>EA,:c=>c)
 set∇𝝭!(elements)
-𝑎₁ = ∫kNṄdxdt => elements
-𝑎₂ = ∫kNNdxdt => elements
-𝑎₃ = ∫NṄdxdt => elements
-𝑎₄ = ∫c²B₁B₁dxdt => elements
+𝑎₁ = ∫∫kNṄdxdt => elements
+𝑎₂ = ∫∫kNNdxdt => elements
+𝑎₃ = ∫∫NṄdxdt => elements
+𝑎₄ = ∫∫c²B₁B₁dxdt => elements
 𝑎₁(kᵘᵘ)
 𝑎₂(kᵘᵛ)
 𝑎₃(kᵛᵛ)
