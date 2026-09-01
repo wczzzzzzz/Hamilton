@@ -164,7 +164,8 @@ for (i,node) in enumerate(nodes)
     points[3,i] = node.d
 end
 cells = [MeshCell(VTKCellTypes.VTK_TRIANGLE, [x.𝐼 for x in elm.𝓒]) for elm in vcat(Ω₀, Ω₁)]
-vtk_grid("./vtk/DG/"*filename*".vtu", points, cells) do vtk
+mkpath("./vtk/DG_Continuous")
+vtk_grid("./vtk/DG_Continuous/"*"DG_Continuous_"*string(ndiv)*".vtu", points, cells) do vtk
     vtk["u"]       = [node.d  for node in nodes]
     vtk["v"]       = [node.δd for node in nodes]
     vtk["u_exact"] = [u_exact(node.x, node.y) for node in nodes]
