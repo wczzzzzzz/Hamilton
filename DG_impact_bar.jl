@@ -14,7 +14,7 @@ u₀(x) = 0.0
 v₀(x) = 1.0
 
 integrationorder = 2
-ndiv = 64
+ndiv = 32
 filename = "DG_impact_"*string(ndiv)
 
 gmsh.initialize()
@@ -40,7 +40,7 @@ elements_Γ⁵  = getElements(nodes, entities["Γ⁵"],  integrationorder)
 
 println("nₚ = ", nₚ, "  Ω₀ = ", length(Ω₀), "  Ω₁ = ", length(Ω₁))
 
-# ==================== slab0 ====================
+# ==================== slab0（初始层0） ====================
 kᵘᵘ = zeros(nₚ,nₚ); kᵘᵛ = zeros(nₚ,nₚ); kᵛᵛ = zeros(nₚ,nₚ); kᵛᵘ = zeros(nₚ,nₚ)
 prescribe!(Ω₀, :k=>EA, :c=>c); set∇𝝭!(Ω₀)
 (∫∫kNṄdxdt    => Ω₀)(kᵘᵘ)
@@ -68,7 +68,7 @@ d₀[dofs₀] = dt₀[1:n₀]; δd₀[dofs₀] = dt₀[n₀+1:end]
 
 println("slab0: u∈[", round(minimum(d₀),digits=4), ", ", round(maximum(d₀),digits=4), "]")
 
-# ==================== slab1 ====================
+# ==================== slab1（时间层1） ====================
 kᵘᵘ = zeros(nₚ,nₚ); kᵘᵛ = zeros(nₚ,nₚ); kᵛᵛ = zeros(nₚ,nₚ); kᵛᵘ = zeros(nₚ,nₚ)
 prescribe!(Ω₁, :k=>EA, :c=>c); set∇𝝭!(Ω₁)
 (∫∫kNṄdxdt    => Ω₁)(kᵘᵘ)
